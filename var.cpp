@@ -17,6 +17,9 @@ namespace cascade
         ++counter_;
 
         covariance_ = std::make_shared<std::unordered_map<int, double>>();
+
+        children_ = std::make_shared<std::vector<Var>>();
+        children_->reserve(2);
     }
 
     Var::Var(const Var &other)
@@ -96,6 +99,10 @@ namespace cascade
     Var operator+(Var &x, Var &y)
     {
         Var result = {x.mean() + y.mean(), 0.0};
+
+        result.children_->push_back(x);
+        result.children_->push_back(y);
+
         return result;
     }
 
