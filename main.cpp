@@ -35,5 +35,12 @@ int main()
     b = x;
     std::cout << covariance(a, b) << std::endl;
 
+    y = x;
+    std::cout << y << std::endl;
+    UInt r = y + x;
+    std::cout << r << std::endl;
+    r = x + y;
+    std::cout << r << std::endl;
+
     return 0;
 }

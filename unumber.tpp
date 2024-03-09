@@ -12,15 +12,16 @@ template <typename T>
 UNumber<T>::UNumber(T value, double sigma) : value_(value), sigma_(sigma) {}
 
 template <typename T>
-UNumber<T>::UNumber(const UNumber<T> &other)
+template <typename U>
+UNumber<T>::UNumber(const UNumber<U> &other) : UNumber(T(other.value()), other.sigma())
 {
-    UNumber(other.value_, other.sigma_);
 }
 
 template <typename T>
-UNumber<T> &UNumber<T>::operator=(const UNumber<T> &other)
+template <typename U>
+UNumber<T> &UNumber<T>::operator=(const UNumber<U> &other)
 {
-    const UNumber<T> tmp = {other.value_, other.sigma_};
+    const UNumber<T> tmp = {T(other.value()), other.sigma()};
 
     index_ = tmp.index_;
     covariance_ = tmp.covariance_;
@@ -41,6 +42,12 @@ template <typename T>
 double UNumber<T>::sigma() const
 {
     return sigma_;
+}
+
+template <typename U, typename V>
+UNumber<double> operator+(const UNumber<U> &x, const UNumber<V> &y)
+{
+    return {x.value_ + y.value_, 0.0};
 }
 
 template <typename T>
