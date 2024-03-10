@@ -110,9 +110,14 @@ namespace cascade
 
     void Var::backprop()
     {
-        *derivative_ = 1;
-
         const std::vector<Var> &nodes = sortNodes_();
+
+        for (const Var &node : nodes)
+        {
+            *node.derivative_ = 0;
+        }
+
+        *derivative_ = 1;
 
         for (const Var &node : nodes)
         {
