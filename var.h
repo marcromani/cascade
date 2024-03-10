@@ -1,6 +1,7 @@
 #ifndef VAR_H
 #define VAR_H
 
+#include <functional>
 #include <memory>
 #include <ostream>
 #include <unordered_map>
@@ -40,13 +41,21 @@ namespace cascade
         static void setCovariance(Var &, Var &, double);
         static double covariance(const Var &, const Var &);
 
+        void backprop();
+
         // Math operators
-        friend Var operator+(Var &, Var &);
-        friend Var operator-(Var &, Var &);
+        friend Var operator+(Var, Var &);
+        friend Var operator-(Var, Var &);
+        friend Var operator*(Var, Var &);
+        friend Var operator/(Var, Var &);
 
         friend std::ostream &operator<<(std::ostream &, const Var &);
 
     private:
+        static void createEdges_(const std::initializer_list<Var> inputNodes, const Var &outputNode);
+
+        std::vector<Var> sortNodes_() const;
+
         std::shared_ptr<double> mean_;
         std::shared_ptr<double> sigma_;
 
@@ -55,6 +64,10 @@ namespace cascade
         std::shared_ptr<std::unordered_map<int, double>> covariance_;
 
         std::shared_ptr<std::vector<Var>> children_;
+        std::shared_ptr<std::vector<Var>> parents_;
+
+        std::shared_ptr<double> derivative_;
+        std::function<void()> backprop_;
 
         static int counter_;
     };
