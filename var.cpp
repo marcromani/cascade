@@ -211,6 +211,7 @@ namespace cascade
         }
     }
 
+    // Topological node sort. Allows backprop_ to be called on the graph nodes while respecting edge dependencies.
     std::vector<Var> Var::sortNodes_() const
     {
         std::vector<Var> nodes;
