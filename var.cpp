@@ -22,7 +22,7 @@ namespace cascade
         children_ = std::make_shared<std::vector<Var>>();
         parents_ = std::make_shared<std::vector<Var>>();
 
-        derivative_ = std::make_shared<double>(0);
+        derivative_ = std::make_shared<double>(0.0);
     }
 
     Var::Var(const Var &other)
@@ -114,10 +114,10 @@ namespace cascade
 
         for (const Var &node : nodes)
         {
-            *node.derivative_ = 0;
+            *node.derivative_ = 0.0;
         }
 
-        *derivative_ = 1;
+        *derivative_ = 1.0;
 
         for (const Var &node : nodes)
         {
@@ -130,19 +130,19 @@ namespace cascade
 
     Var operator+(Var x, Var y)
     {
-        Var result = x.mean() + y.mean();
+        std::shared_ptr<Var> result = std::make_shared<Var>(x.mean() + y.mean());
 
-        Var::createEdges_({x, y}, result);
+        Var::createEdges_({x, y}, *result);
 
-        result.backprop_ = [&result]() {
-            const Var &x = result.children_->at(0);
-            const Var &y = result.children_->at(1);
+        result->backprop_ = [result]() {
+            const Var &x = result->children_->at(0);
+            const Var &y = result->children_->at(1);
 
-            *x.derivative_ += *result.derivative_;
-            *y.derivative_ += *result.derivative_;
+            *x.derivative_ += *result->derivative_;
+            *y.derivative_ += *result->derivative_;
         };
 
-        return result;
+        return *result;
     }
 
     Var operator-(Var x, Var y)
@@ -164,19 +164,19 @@ namespace cascade
 
     Var operator*(Var x, Var y)
     {
-        Var result = x.mean() * y.mean();
+        std::shared_ptr<Var> result = std::make_shared<Var>(x.mean() * y.mean());
 
-        Var::createEdges_({x, y}, result);
+        Var::createEdges_({x, y}, *result);
 
-        result.backprop_ = [&result]() {
-            const Var &x = result.children_->at(0);
-            const Var &y = result.children_->at(1);
+        result->backprop_ = [result]() {
+            const Var &x = result->children_->at(0);
+            const Var &y = result->children_->at(1);
 
-            *x.derivative_ += y.mean() * *result.derivative_;
-            *y.derivative_ += x.mean() * *result.derivative_;
+            *x.derivative_ += y.mean() * *result->derivative_;
+            *y.derivative_ += x.mean() * *result->derivative_;
         };
 
-        return result;
+        return *result;
     }
 
     Var operator/(Var x, Var y)
