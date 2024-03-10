@@ -13,7 +13,7 @@ int main()
     cascade::Var w = (x + y) * z;
     w = w * w * x;
 
-    std::cout << w.index() << std::endl;
+    std::cout << w.id() << std::endl;
     std::cout << w.mean() << std::endl;
     std::cout << w.sigma() << std::endl;
 

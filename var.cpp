@@ -9,20 +9,12 @@ namespace cascade
 
     Var::Var(double mean) : Var(mean, 0.0) {}
 
-    Var::Var(double mean, double sigma)
+    Var::Var(double mean, double sigma) : mean_(mean), sigma_(sigma), index_(counter_), derivative_(0.0)
     {
-        mean_ = std::make_shared<double>(mean);
-        sigma_ = std::make_shared<double>(sigma);
-
-        index_ = std::make_shared<int>(counter_);
-        ++counter_;
-
         covariance_ = std::make_shared<std::unordered_map<int, double>>();
+        covariance_->emplace(index_, sigma_ * sigma_);
 
-        children_ = std::make_shared<std::vector<Var>>();
-        parents_ = std::make_shared<std::vector<Var>>();
-
-        derivative_ = std::make_shared<double>(0.0);
+        ++counter_;
     }
 
     Var::Var(const Var &other)
@@ -50,28 +42,28 @@ namespace cascade
 
     double Var::mean() const
     {
-        return *mean_;
+        return mean_;
     }
 
     double Var::sigma() const
     {
-        return *sigma_;
+        return sigma_;
     }
 
-    int Var::index() const
+    int Var::id() const
     {
-        return *index_;
+        return index_;
     }
 
     void Var::setCovariance(Var &x, Var &y, double value)
     {
-        if (x.index() < y.index())
+        if (x.id() < y.id())
         {
-            x.covariance_->emplace(y.index(), value);
+            x.covariance_->emplace(y.id(), value);
         }
         else
         {
-            y.covariance_->emplace(x.index(), value);
+            y.covariance_->emplace(x.id(), value);
         }
     }
 
@@ -80,7 +72,7 @@ namespace cascade
         const Var *parent;
         const Var *child;
 
-        if (x.index() < y.index())
+        if (x.id() < y.id())
         {
             parent = &x;
             child = &y;
@@ -91,7 +83,7 @@ namespace cascade
             child = &x;
         }
 
-        auto search = parent->covariance_->find(child->index());
+        auto search = parent->covariance_->find(child->id());
 
         if (search != parent->covariance_->end())
         {
@@ -105,19 +97,19 @@ namespace cascade
 
     double Var::derivative() const
     {
-        return *derivative_;
+        return derivative_;
     }
 
     void Var::backprop()
     {
-        const std::vector<Var> &nodes = sortNodes_();
+        std::vector<Var> nodes = sortNodes_();
 
-        for (const Var &node : nodes)
+        for (Var &node : nodes)
         {
-            *node.derivative_ = 0.0;
+            node.derivative_ = 0.0;
         }
 
-        *derivative_ = 1.0;
+        derivative_ = 1.0;
 
         for (const Var &node : nodes)
         {
@@ -130,19 +122,19 @@ namespace cascade
 
     Var operator+(Var x, Var y)
     {
-        std::shared_ptr<Var> result = std::make_shared<Var>(x.mean() + y.mean());
+        Var result = x.mean() + y.mean();
 
-        Var::createEdges_({x, y}, *result);
+        Var::createEdges_({x, y}, result);
 
-        result->backprop_ = [result]() {
-            const Var &x = result->children_->at(0);
-            const Var &y = result->children_->at(1);
+        result.backprop_ = [result]() {
+            Var x = result.children_.at(0);
+            Var y = result.children_.at(1);
 
-            *x.derivative_ += *result->derivative_;
-            *y.derivative_ += *result->derivative_;
+            x.derivative_ += result.derivative_;
+            y.derivative_ += result.derivative_;
         };
 
-        return *result;
+        return result;
     }
 
     Var operator-(Var x, Var y)
@@ -151,12 +143,12 @@ namespace cascade
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&result]() {
-            const Var &x = result.children_->at(0);
-            const Var &y = result.children_->at(1);
+        result.backprop_ = [result]() {
+            Var x = result.children_.at(0);
+            Var y = result.children_.at(1);
 
-            *x.derivative_ += *result.derivative_;
-            *y.derivative_ -= *result.derivative_;
+            x.derivative_ += result.derivative_;
+            y.derivative_ -= result.derivative_;
         };
 
         return result;
@@ -164,19 +156,19 @@ namespace cascade
 
     Var operator*(Var x, Var y)
     {
-        std::shared_ptr<Var> result = std::make_shared<Var>(x.mean() * y.mean());
+        Var result = x.mean() * y.mean();
 
-        Var::createEdges_({x, y}, *result);
+        Var::createEdges_({x, y}, result);
 
-        result->backprop_ = [result]() {
-            const Var &x = result->children_->at(0);
-            const Var &y = result->children_->at(1);
+        result.backprop_ = [result]() {
+            Var x = result.children_.at(0);
+            Var y = result.children_.at(1);
 
-            *x.derivative_ += y.mean() * *result->derivative_;
-            *y.derivative_ += x.mean() * *result->derivative_;
+            x.derivative_ += y.mean() * result.derivative_;
+            y.derivative_ += x.mean() * result.derivative_;
         };
 
-        return *result;
+        return result;
     }
 
     Var operator/(Var x, Var y)
@@ -185,12 +177,12 @@ namespace cascade
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&result]() {
-            const Var &x = result.children_->at(0);
-            const Var &y = result.children_->at(1);
+        result.backprop_ = [result]() {
+            Var x = result.children_.at(0);
+            Var y = result.children_.at(1);
 
-            *x.derivative_ += (1 / y.mean()) * *result.derivative_;
-            *y.derivative_ -= (x.mean() / (y.mean() * y.mean())) * *result.derivative_;
+            x.derivative_ += (1 / y.mean()) * result.derivative_;
+            y.derivative_ -= (x.mean() / (y.mean() * y.mean())) * result.derivative_;
         };
 
         return result;
@@ -202,16 +194,15 @@ namespace cascade
         return os;
     }
 
-    void Var::createEdges_(const std::initializer_list<Var> inputNodes, const Var &outputNode)
+    void Var::createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode)
     {
-        for (const Var &x : inputNodes)
+        for (Var x : inputNodes)
         {
-            outputNode.children_->push_back(x);
-            x.parents_->push_back(outputNode);
+            outputNode.children_.push_back(x);
+            x.parents_.push_back(outputNode);
         }
     }
 
-    // Topological node sort. Allows backprop_ to be called on the graph nodes while respecting edge dependencies.
     std::vector<Var> Var::sortNodes_() const
     {
         std::vector<Var> nodes;
@@ -227,20 +218,20 @@ namespace cascade
 
             nodes.push_back(node);
 
-            for (const Var &child : *node.children_)
+            for (const Var &child : node.children_)
             {
-                auto search = numParents.find(child.index());
+                auto search = numParents.find(child.id());
 
                 if (search != numParents.end())
                 {
-                    --numParents[child.index()];
+                    --numParents[child.id()];
                 }
                 else
                 {
-                    numParents[child.index()] = child.parents_->size() - 1;
+                    numParents[child.id()] = child.parents_.size() - 1;
                 }
 
-                if (numParents[child.index()] == 0)
+                if (numParents[child.id()] == 0)
                 {
                     stack.push(child);
                 }

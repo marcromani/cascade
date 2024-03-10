@@ -12,31 +12,51 @@ namespace cascade
     class Var
     {
     public:
-        /// @brief Constructs an instance with value 0 ± 0.
+        /**
+         * @brief Constructs an instance with value 0 ± 0.
+         * 
+         */
         Var();
 
-        /// @brief Constructs an instance with value \p mean ± 0.
-        /// @param mean
+        /**
+         * @brief Constructs an instance with value \p mean ± 0.
+         * 
+         * @param mean
+         */
         Var(double mean);
 
-        /// @brief Constructs an instance with value \p mean ± \p sigma.
-        /// @param mean
-        /// @param sigma
+        /**
+         * @brief Constructs an instance with value \p mean ± \p sigma.
+         * 
+         * @param mean
+         * @param sigma
+         */
         Var(double mean, double sigma);
 
-        /// @brief Copy constructor. Creates a shallow copy, the new instance shares the internal state with \p other.
-        /// @param other
+        /**
+         * @brief Creates a deep copy, however, the new instance shares the covariance matrix with \p other,
+         * and they both have the same \ref id.
+         * 
+         * @param other
+         */
         Var(const Var &other);
 
-        /// @brief  Assignment operator. Creates a shallow copy, the new instance shares the internal state with \p other.
-        /// @param other
-        /// @return The shallow copy.
+        /**
+         * @brief Creates a deep copy, however, the new instance shares the covariance matrix with \p other,
+         * and they both have the same \ref id.
+         * 
+         * @param other
+         */
         Var &operator=(const Var &other);
 
         double mean() const;
         double sigma() const;
 
-        int index() const;
+        /**
+         * @brief Unique index (up to copies) that identifies a variable and tracks its correlations.
+         * 
+         */
+        int id() const;
 
         static void setCovariance(Var &, Var &, double);
         static double covariance(const Var &, const Var &);
@@ -53,21 +73,26 @@ namespace cascade
         friend std::ostream &operator<<(std::ostream &, const Var &);
 
     private:
-        static void createEdges_(const std::initializer_list<Var> inputNodes, const Var &outputNode);
+        static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
 
+        /**
+         * @brief Topological node sort. Allows \ref backprop_ to be called on the graph nodes while respecting edge dependencies.
+         * 
+         * @return The sorted nodes.
+         */
         std::vector<Var> sortNodes_() const;
 
-        std::shared_ptr<double> mean_;
-        std::shared_ptr<double> sigma_;
+        double mean_;
+        double sigma_;
 
-        std::shared_ptr<int> index_;
+        int index_;
 
         std::shared_ptr<std::unordered_map<int, double>> covariance_;
 
-        std::shared_ptr<std::vector<Var>> children_;
-        std::shared_ptr<std::vector<Var>> parents_;
+        std::vector<Var> children_;
+        std::vector<Var> parents_;
 
-        std::shared_ptr<double> derivative_;
+        double derivative_;
         std::function<void()> backprop_;
 
         static int counter_;
