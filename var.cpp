@@ -103,18 +103,36 @@ namespace cascade
         }
     }
 
+    double Var::derivative() const
+    {
+        return *derivative_;
+    }
+
     void Var::backprop()
     {
         *derivative_ = 1;
+
+        const std::vector<Var> &nodes = sortNodes_();
+
+        for (const Var &node : nodes)
+        {
+            if (node.backprop_)
+            {
+                node.backprop_();
+            }
+        }
     }
 
-    Var operator+(Var x, Var &y)
+    Var operator+(Var x, Var y)
     {
         Var result = x.mean() + y.mean();
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&x, &y, &result]() {
+        result.backprop_ = [&result]() {
+            const Var &x = result.children_->at(0);
+            const Var &y = result.children_->at(1);
+
             *x.derivative_ += *result.derivative_;
             *y.derivative_ += *result.derivative_;
         };
@@ -122,13 +140,16 @@ namespace cascade
         return result;
     }
 
-    Var operator-(Var x, Var &y)
+    Var operator-(Var x, Var y)
     {
         Var result = x.mean() - y.mean();
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&x, &y, &result]() {
+        result.backprop_ = [&result]() {
+            const Var &x = result.children_->at(0);
+            const Var &y = result.children_->at(1);
+
             *x.derivative_ += *result.derivative_;
             *y.derivative_ -= *result.derivative_;
         };
@@ -136,13 +157,16 @@ namespace cascade
         return result;
     }
 
-    Var operator*(Var x, Var &y)
+    Var operator*(Var x, Var y)
     {
         Var result = x.mean() * y.mean();
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&x, &y, &result]() {
+        result.backprop_ = [&result]() {
+            const Var &x = result.children_->at(0);
+            const Var &y = result.children_->at(1);
+
             *x.derivative_ += y.mean() * *result.derivative_;
             *y.derivative_ += x.mean() * *result.derivative_;
         };
@@ -150,13 +174,16 @@ namespace cascade
         return result;
     }
 
-    Var operator/(Var x, Var &y)
+    Var operator/(Var x, Var y)
     {
         Var result = x.mean() / y.mean();
 
         Var::createEdges_({x, y}, result);
 
-        result.backprop_ = [&x, &y, &result]() {
+        result.backprop_ = [&result]() {
+            const Var &x = result.children_->at(0);
+            const Var &y = result.children_->at(1);
+
             *x.derivative_ += (1 / y.mean()) * *result.derivative_;
             *y.derivative_ -= (x.mean() / (y.mean() * y.mean())) * *result.derivative_;
         };

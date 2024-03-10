@@ -41,13 +41,14 @@ namespace cascade
         static void setCovariance(Var &, Var &, double);
         static double covariance(const Var &, const Var &);
 
+        double derivative() const;
         void backprop();
 
         // Math operators
-        friend Var operator+(Var, Var &);
-        friend Var operator-(Var, Var &);
-        friend Var operator*(Var, Var &);
-        friend Var operator/(Var, Var &);
+        friend Var operator+(Var, Var);
+        friend Var operator-(Var, Var);
+        friend Var operator*(Var, Var);
+        friend Var operator/(Var, Var);
 
         friend std::ostream &operator<<(std::ostream &, const Var &);
 
