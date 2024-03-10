@@ -1,4 +1,5 @@
 #include "var.h"
+#include <stack>
 
 namespace cascade
 {
@@ -180,6 +181,39 @@ namespace cascade
 
     std::vector<Var> Var::sortNodes_() const
     {
-        return {};
+        std::vector<Var> nodes;
+
+        std::unordered_map<int, int> numParents;
+
+        std::stack<Var> stack({*this});
+
+        while (!stack.empty())
+        {
+            const Var &node = stack.top();
+            stack.pop();
+
+            nodes.push_back(node);
+
+            for (const Var &child : *node.children_)
+            {
+                auto search = numParents.find(child.index());
+
+                if (search != numParents.end())
+                {
+                    --numParents[child.index()];
+                }
+                else
+                {
+                    numParents[child.index()] = child.parents_->size() - 1;
+                }
+
+                if (numParents[child.index()] == 0)
+                {
+                    stack.push(child);
+                }
+            }
+        }
+
+        return nodes;
     }
 }
