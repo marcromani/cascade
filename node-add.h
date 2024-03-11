@@ -10,7 +10,7 @@ namespace cascade
     public:
         using Node::Node;
 
-    protected:
+    private:
         void backprop_();
     };
 }

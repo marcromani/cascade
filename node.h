@@ -24,8 +24,6 @@ namespace cascade
         void setDerivative(double derivative);
 
     protected:
-        virtual void backprop_();
-
         int id_;
 
         double value_;
@@ -36,6 +34,8 @@ namespace cascade
         std::vector<std::shared_ptr<Node>> parents_;
 
     private:
+        virtual void backprop_();
+
         static int counter_;
     };
 }
