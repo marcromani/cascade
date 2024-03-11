@@ -5,14 +5,14 @@
 
 namespace cascade
 {
-    class NodeDiv final : public Node
-    {
-    public:
-        using Node::Node;
+class NodeDiv final : public Node
+{
+public:
+    using Node::Node;
 
-    private:
-        void backprop_();
-    };
-}
+private:
+    void backprop_();
+};
+}  // namespace cascade
 
 #endif
