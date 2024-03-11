@@ -1,6 +1,7 @@
 #ifndef VAR_H
 #define VAR_H
 
+#include "node.h"
 #include <functional>
 #include <memory>
 #include <ostream>
@@ -82,7 +83,8 @@ namespace cascade
          */
         std::vector<Var> sortNodes_() const;
 
-        double mean_;
+        std::shared_ptr<Node> node_;
+
         double sigma_;
 
         int index_;
@@ -92,8 +94,7 @@ namespace cascade
         std::vector<Var> children_;
         std::vector<Var> parents_;
 
-        double derivative_;
-        std::function<void()> backprop_;
+        virtual void backprop_();
 
         static int counter_;
     };
