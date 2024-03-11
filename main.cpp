@@ -10,8 +10,8 @@ int main()
     cascade::Var::setCovariance(x, y, -3);
     cascade::Var::setCovariance(x, z, 2.5);
 
-    cascade::Var w = (x + y) * z;
-    w = w * w * x;
+    cascade::Var v = (x + y) * z;
+    cascade::Var w = v * v * x;
 
     std::cout << w.id() << std::endl;
     std::cout << w.mean() << std::endl;
@@ -22,6 +22,7 @@ int main()
     std::cout << x.derivative() << std::endl;
     std::cout << y.derivative() << std::endl;
     std::cout << z.derivative() << std::endl;
+    std::cout << v.derivative() << std::endl;
 
     return 0;
 }
