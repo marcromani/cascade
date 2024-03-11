@@ -4,7 +4,6 @@
 #include "node.h"
 #include <memory>
 #include <ostream>
-#include <unordered_map>
 #include <vector>
 
 namespace cascade
@@ -67,8 +66,6 @@ namespace cascade
         std::vector<Var> sortNodes_() const;
 
         std::shared_ptr<Node> node_;
-
-        std::shared_ptr<std::unordered_map<int, double>> covariance_;
 
         std::vector<Var> children_;
         std::vector<Var> parents_;

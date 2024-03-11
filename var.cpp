@@ -11,11 +11,7 @@ namespace cascade
 
     Var::Var(double value) : Var(value, 0.0) {}
 
-    Var::Var(double value, double sigma) : node_(new Node(value, sigma))
-    {
-        covariance_ = std::make_shared<std::unordered_map<int, double>>();
-        covariance_->emplace(node_->id_, sigma * sigma);
-    }
+    Var::Var(double value, double sigma) : node_(new Node(value, sigma)) {}
 
     int Var::id() const
     {
@@ -39,42 +35,12 @@ namespace cascade
 
     double Var::covariance(const Var &x, const Var &y)
     {
-        const Var *parent;
-        const Var *child;
-
-        if (x.id() < y.id())
-        {
-            parent = &x;
-            child = &y;
-        }
-        else
-        {
-            parent = &y;
-            child = &x;
-        }
-
-        auto search = parent->covariance_->find(child->id());
-
-        if (search != parent->covariance_->end())
-        {
-            return search->second;
-        }
-        else
-        {
-            return 0.0;
-        }
+        return Node::covariance(x.node_, y.node_);
     }
 
     void Var::setCovariance(Var &x, Var &y, double value)
     {
-        if (x.id() < y.id())
-        {
-            x.covariance_->emplace(y.id(), value);
-        }
-        else
-        {
-            y.covariance_->emplace(x.id(), value);
-        }
+        Node::setCovariance(x.node_, y.node_, value);
     }
 
     void Var::backprop()

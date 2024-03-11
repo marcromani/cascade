@@ -34,5 +34,10 @@ int main()
     x = x + w;
     std::cout << x.id() << std::endl;
 
+    cascade::Var a = x + y;
+    cascade::Var b = w + a;
+
+    std::cout << cascade::Var::covariance(z, z) << std::endl;
+
     return 0;
 }
