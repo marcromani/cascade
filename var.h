@@ -2,7 +2,6 @@
 #define VAR_H
 
 #include "node.h"
-#include <functional>
 #include <memory>
 #include <ostream>
 #include <unordered_map>
@@ -20,49 +19,33 @@ namespace cascade
         Var();
 
         /**
-         * @brief Constructs an instance with value \p mean ± 0.
+         * @brief Constructs an instance with value \p value ± 0.
          * 
-         * @param mean
+         * @param value
          */
-        Var(double mean);
+        Var(double value);
 
         /**
-         * @brief Constructs an instance with value \p mean ± \p sigma.
+         * @brief Constructs an instance with value \p value ± \p sigma.
          * 
-         * @param mean
+         * @param value
          * @param sigma
          */
-        Var(double mean, double sigma);
+        Var(double value, double sigma);
 
         /**
-         * @brief Creates a deep copy, however, the new instance shares the covariance matrix with \p other,
-         * and they both have the same \ref id.
-         * 
-         * @param other
-         */
-        Var(const Var &other);
-
-        /**
-         * @brief Creates a deep copy, however, the new instance shares the covariance matrix with \p other,
-         * and they both have the same \ref id.
-         * 
-         * @param other
-         */
-        Var &operator=(const Var &other);
-
-        double mean() const;
-        double sigma() const;
-
-        /**
-         * @brief Unique index (up to copies) that identifies a variable and tracks its correlations.
+         * @brief Unique id that identifies a variable and tracks its correlations.
          * 
          */
         int id() const;
 
-        static void setCovariance(Var &, Var &, double);
-        static double covariance(const Var &, const Var &);
-
+        double value() const;
+        double sigma() const;
         double derivative() const;
+
+        static double covariance(const Var &, const Var &);
+        static void setCovariance(Var &, Var &, double);
+
         void backprop();
 
         // Math operators
@@ -77,7 +60,7 @@ namespace cascade
         static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
 
         /**
-         * @brief Topological node sort. Allows \ref backprop_ to be called on the graph nodes while respecting edge dependencies.
+         * @brief Topologically sorts the nodes of the implicit graph rooted at the caller instance.
          * 
          * @return The sorted nodes.
          */
@@ -85,18 +68,10 @@ namespace cascade
 
         std::shared_ptr<Node> node_;
 
-        double sigma_;
-
-        int index_;
-
         std::shared_ptr<std::unordered_map<int, double>> covariance_;
 
         std::vector<Var> children_;
         std::vector<Var> parents_;
-
-        virtual void backprop_();
-
-        static int counter_;
     };
 }
 

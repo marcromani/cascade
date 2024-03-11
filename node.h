@@ -8,11 +8,17 @@ namespace cascade
 {
     class Node
     {
+        friend class Var;
+
     public:
         Node();
         Node(double value);
+        Node(double value, double sigma);
+
+        int id() const;
 
         double value() const;
+        double sigma() const;
         double derivative() const;
 
         void setDerivative(double derivative);
@@ -20,13 +26,17 @@ namespace cascade
     protected:
         virtual void backprop_();
 
+        int id_;
+
         double value_;
+        double sigma_;
         double derivative_;
 
         std::vector<std::shared_ptr<Node>> children_;
         std::vector<std::shared_ptr<Node>> parents_;
 
-        friend class Var;
+    private:
+        static int counter_;
     };
 }
 

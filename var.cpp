@@ -1,71 +1,38 @@
 #include "var.h"
-#include <stack>
-
 #include "node-add.h"
 #include "node-mul.h"
+#include <stack>
 
 namespace cascade
 {
-    int Var::counter_ = 0;
-
     Var::Var() : Var(0.0) {}
 
-    Var::Var(double mean) : Var(mean, 0.0) {}
+    Var::Var(double value) : Var(value, 0.0) {}
 
-    Var::Var(double mean, double sigma) : node_(new Node(mean)), sigma_(sigma), index_(counter_)
+    Var::Var(double value, double sigma) : node_(new Node(value, sigma))
     {
         covariance_ = std::make_shared<std::unordered_map<int, double>>();
-        covariance_->emplace(index_, sigma_ * sigma_);
-
-        ++counter_;
-    }
-
-    Var::Var(const Var &other)
-    {
-        *this = other;
-    }
-
-    Var &Var::operator=(const Var &other)
-    {
-        node_ = other.node_;
-
-        sigma_ = other.sigma_;
-
-        index_ = other.index_;
-
-        covariance_ = other.covariance_;
-
-        children_ = other.children_;
-        parents_ = other.parents_;
-
-        return *this;
-    }
-
-    double Var::mean() const
-    {
-        return node_->value();
-    }
-
-    double Var::sigma() const
-    {
-        return sigma_;
+        covariance_->emplace(node_->id_, sigma * sigma);
     }
 
     int Var::id() const
     {
-        return index_;
+        return node_->id_;
     }
 
-    void Var::setCovariance(Var &x, Var &y, double value)
+    double Var::value() const
     {
-        if (x.index_ < y.index_)
-        {
-            x.covariance_->emplace(y.index_, value);
-        }
-        else
-        {
-            y.covariance_->emplace(x.index_, value);
-        }
+        return node_->value_;
+    }
+
+    double Var::sigma() const
+    {
+        return node_->sigma_;
+    }
+
+    double Var::derivative() const
+    {
+        return node_->derivative_;
     }
 
     double Var::covariance(const Var &x, const Var &y)
@@ -73,7 +40,7 @@ namespace cascade
         const Var *parent;
         const Var *child;
 
-        if (x.index_ < y.index_)
+        if (x.id() < y.id())
         {
             parent = &x;
             child = &y;
@@ -84,7 +51,7 @@ namespace cascade
             child = &x;
         }
 
-        auto search = parent->covariance_->find(child->index_);
+        auto search = parent->covariance_->find(child->id());
 
         if (search != parent->covariance_->end())
         {
@@ -96,16 +63,23 @@ namespace cascade
         }
     }
 
-    double Var::derivative() const
+    void Var::setCovariance(Var &x, Var &y, double value)
     {
-        return node_->derivative();
+        if (x.id() < y.id())
+        {
+            x.covariance_->emplace(y.id(), value);
+        }
+        else
+        {
+            y.covariance_->emplace(x.id(), value);
+        }
     }
 
     void Var::backprop()
     {
         std::vector<Var> nodes = sortNodes_();
 
-        for (Var &node : nodes)
+        for (const Var &node : nodes)
         {
             node.node_->derivative_ = 0.0;
         }
@@ -114,15 +88,15 @@ namespace cascade
 
         for (Var &node : nodes)
         {
-            node.backprop_();
+            node.node_->backprop_();
         }
     }
 
     Var operator+(Var x, Var y)
     {
-        Var result = x.mean() + y.mean();
+        Var result = x.value() + y.value();
 
-        result.node_ = std::shared_ptr<Node>(new NodeAdd(result.mean()));
+        result.node_ = std::shared_ptr<Node>(new NodeAdd(result.value()));
 
         Var::createEdges_({x, y}, result);
 
@@ -131,9 +105,9 @@ namespace cascade
 
     // Var operator-(Var x, Var y)
     // {
-    //     Var result = x.mean() - y.mean();
+    //     Var result = x.value() - y.value();
 
-    //     result.node_ = std::shared_ptr<Node>(new NodeSub(result.mean()));
+    //     result.node_ = std::shared_ptr<Node>(new NodeSub(result.value()));
 
     //     Var::createEdges_({x, y}, result);
 
@@ -142,9 +116,9 @@ namespace cascade
 
     Var operator*(Var x, Var y)
     {
-        Var result = x.mean() * y.mean();
+        Var result = x.value() * y.value();
 
-        result.node_ = std::shared_ptr<Node>(new NodeMul(result.mean()));
+        result.node_ = std::shared_ptr<Node>(new NodeMul(result.value()));
 
         Var::createEdges_({x, y}, result);
 
@@ -153,9 +127,9 @@ namespace cascade
 
     // Var operator/(Var x, Var y)
     // {
-    //     Var result = x.mean() / y.mean();
+    //     Var result = x.value() / y.value();
 
-    //     result.node_ = std::shared_ptr<Node>(new NodeDiv(result.mean()));
+    //     result.node_ = std::shared_ptr<Node>(new NodeDiv(result.value()));
 
     //     Var::createEdges_({x, y}, result);
 
@@ -164,7 +138,7 @@ namespace cascade
 
     std::ostream &operator<<(std::ostream &os, const Var &x)
     {
-        os << x.mean() << " ± " << x.sigma_;
+        os << x.value() << " ± " << x.sigma();
         return os;
     }
 
@@ -200,18 +174,18 @@ namespace cascade
 
             for (const Var &child : node.children_)
             {
-                auto search = numParents.find(child.index_);
+                auto search = numParents.find(child.id());
 
                 if (search != numParents.end())
                 {
-                    --numParents[child.index_];
+                    --numParents[child.id()];
                 }
                 else
                 {
-                    numParents[child.index_] = child.parents_.size() - 1;
+                    numParents[child.id()] = child.parents_.size() - 1;
                 }
 
-                if (numParents[child.index_] == 0)
+                if (numParents[child.id()] == 0)
                 {
                     stack.push(child);
                 }
@@ -219,10 +193,5 @@ namespace cascade
         }
 
         return nodes;
-    }
-
-    void Var::backprop_()
-    {
-        node_->backprop_();
     }
 }

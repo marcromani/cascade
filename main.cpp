@@ -14,7 +14,7 @@ int main()
     cascade::Var w = v * v * x;
 
     std::cout << w.id() << std::endl;
-    std::cout << w.mean() << std::endl;
+    std::cout << w.value() << std::endl;
     std::cout << w.sigma() << std::endl;
 
     w.backprop();
@@ -23,6 +23,16 @@ int main()
     std::cout << y.derivative() << std::endl;
     std::cout << z.derivative() << std::endl;
     std::cout << v.derivative() << std::endl;
+
+    cascade::Var t = w;
+    x = w;
+
+    std::cout << w.id() << std::endl;
+    std::cout << t.id() << std::endl;
+    std::cout << x.id() << std::endl;
+
+    x = x + w;
+    std::cout << x.id() << std::endl;
 
     return 0;
 }
