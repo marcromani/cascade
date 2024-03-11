@@ -1,6 +1,8 @@
 #include "var.h"
 #include "node-add.h"
+#include "node-div.h"
 #include "node-mul.h"
+#include "node-sub.h"
 #include <stack>
 
 namespace cascade
@@ -103,16 +105,16 @@ namespace cascade
         return result;
     }
 
-    // Var operator-(Var x, Var y)
-    // {
-    //     Var result = x.value() - y.value();
+    Var operator-(Var x, Var y)
+    {
+        Var result = x.value() - y.value();
 
-    //     result.node_ = std::shared_ptr<Node>(new NodeSub(result.value()));
+        result.node_ = std::shared_ptr<Node>(new NodeSub(result.value()));
 
-    //     Var::createEdges_({x, y}, result);
+        Var::createEdges_({x, y}, result);
 
-    //     return result;
-    // }
+        return result;
+    }
 
     Var operator*(Var x, Var y)
     {
@@ -125,16 +127,16 @@ namespace cascade
         return result;
     }
 
-    // Var operator/(Var x, Var y)
-    // {
-    //     Var result = x.value() / y.value();
+    Var operator/(Var x, Var y)
+    {
+        Var result = x.value() / y.value();
 
-    //     result.node_ = std::shared_ptr<Node>(new NodeDiv(result.value()));
+        result.node_ = std::shared_ptr<Node>(new NodeDiv(result.value()));
 
-    //     Var::createEdges_({x, y}, result);
+        Var::createEdges_({x, y}, result);
 
-    //     return result;
-    // }
+        return result;
+    }
 
     std::ostream &operator<<(std::ostream &os, const Var &x)
     {
