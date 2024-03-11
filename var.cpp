@@ -3,6 +3,7 @@
 #include "node-div.h"
 #include "node-mul.h"
 #include "node-sub.h"
+#include <algorithm>
 #include <stack>
 
 namespace cascade
@@ -45,7 +46,7 @@ namespace cascade
 
     void Var::backprop()
     {
-        std::vector<Var> nodes = sortNodes_();
+        std::vector<Var> nodes = sortedNodes_();
 
         for (const Var &node : nodes)
         {
@@ -125,7 +126,7 @@ namespace cascade
         }
     }
 
-    std::vector<Var> Var::sortNodes_() const
+    std::vector<Var> Var::sortedNodes_() const
     {
         std::vector<Var> nodes;
 
@@ -161,5 +162,15 @@ namespace cascade
         }
 
         return nodes;
+    }
+
+    std::vector<Var> Var::inputNodes_() const
+    {
+        const std::vector<Var> &nodes = sortedNodes_();
+
+        std::vector<Var> inputNodes;
+        std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(inputNodes), [](const Var &node) { return node.children_.empty(); });
+
+        return inputNodes;
     }
 }

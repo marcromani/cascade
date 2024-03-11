@@ -59,11 +59,13 @@ namespace cascade
         static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
 
         /**
-         * @brief Topologically sorts the nodes of the implicit graph rooted at the caller instance.
+         * @brief Constructs a topologically sorted list of nodes of the implicit graph rooted at the caller instance.
          * 
          * @return The sorted nodes.
          */
-        std::vector<Var> sortNodes_() const;
+        std::vector<Var> sortedNodes_() const;
+
+        std::vector<Var> inputNodes_() const;
 
         std::shared_ptr<Node> node_;
 
