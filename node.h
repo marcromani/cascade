@@ -40,7 +40,7 @@ protected:
     std::vector<std::shared_ptr<Node>> parents_;
 
 private:
-    virtual void backprop_();
+    virtual void backprop_() = 0;
 
     static int counter_;
 };

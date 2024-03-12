@@ -64,6 +64,4 @@ void Node::setCovariance(std::shared_ptr<Node> x, std::shared_ptr<Node> y, doubl
         y->covariance_.emplace(x->id_, value);
     }
 }
-
-void Node::backprop_() {}
 }  // namespace cascade

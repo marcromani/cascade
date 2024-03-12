@@ -44,7 +44,7 @@ public:
     double derivative() const;
 
     static double covariance(const Var &, const Var &);
-    static void setCovariance(Var &, Var &, double);
+    static bool setCovariance(Var &, Var &, double);
 
     void backprop();
 

@@ -4,6 +4,7 @@
 #include "node-div.h"
 #include "node-mul.h"
 #include "node-sub.h"
+#include "node-var.h"
 
 #include <algorithm>
 #include <set>
@@ -15,7 +16,7 @@ Var::Var() : Var(0.0) {}
 
 Var::Var(double value) : Var(value, 0.0) {}
 
-Var::Var(double value, double sigma) : node_(new Node(value, sigma)) {}
+Var::Var(double value, double sigma) : node_(new NodeVar(value, sigma)) {}
 
 int Var::id() const { return node_->id_; }
 
@@ -27,7 +28,17 @@ double Var::derivative() const { return node_->derivative_; }
 
 double Var::covariance(const Var &x, const Var &y) { return Node::covariance(x.node_, y.node_); }
 
-void Var::setCovariance(Var &x, Var &y, double value) { Node::setCovariance(x.node_, y.node_, value); }
+bool Var::setCovariance(Var &x, Var &y, double value)
+{
+    if (!std::dynamic_pointer_cast<NodeVar>(x.node_) || !std::dynamic_pointer_cast<NodeVar>(y.node_))
+    {
+        return false;
+    }
+
+    Node::setCovariance(x.node_, y.node_, value);
+
+    return true;
+}
 
 void Var::backprop()
 {
