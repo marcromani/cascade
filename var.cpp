@@ -154,8 +154,9 @@ std::vector<Var> Var::inputNodes_() const
     const std::vector<Var> &nodes = sortedNodes_();
 
     std::vector<Var> inputNodes;
-    std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(inputNodes),
-                 [](const Var &node) { return node.children_.empty(); });
+    std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(inputNodes), [](const Var &node) {
+        return node.children_.empty();
+    });
 
     return inputNodes;
 }
