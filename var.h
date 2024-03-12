@@ -70,7 +70,9 @@ private:
 
 public:
     // TODO
-    static double covariance2(Var &, Var &);
+    static double covariance_(Var &, Var &);
+
+    static std::vector<double> matrixMultiply_(const std::vector<double> &A, const std::vector<double> &B, int rowsA);
 
 private:
     std::shared_ptr<Node> node_;

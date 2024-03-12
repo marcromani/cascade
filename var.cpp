@@ -172,7 +172,7 @@ std::vector<Var> Var::inputNodes_() const
     return inputNodes;
 }
 
-double Var::covariance2(Var &x, Var &y)
+double Var::covariance_(Var &x, Var &y)
 {
     x.backprop();
     std::vector<Var> nodesX = x.inputNodes_();
@@ -238,22 +238,28 @@ double Var::covariance2(Var &x, Var &y)
         }
     }
 
-    // Matrix product
-    std::vector<double> tmp(nodes.size(), 0.0);
+    std::vector<double> result = matrixMultiply_(matrix, gradientX, nodes.size());
+    result                     = matrixMultiply_(gradientY, result, 1);
 
-    for (size_t i = 0; i < nodes.size(); ++i)
+    return result[0];
+}
+
+std::vector<double> Var::matrixMultiply_(const std::vector<double> &A, const std::vector<double> &B, int rowsA)
+{
+    const int colsA = A.size() / rowsA;
+    const int colsB = B.size() / colsA;
+
+    std::vector<double> result(rowsA * colsB, 0.0);
+
+    for (int i = 0; i < rowsA; ++i)
     {
-        for (size_t j = 0; j < nodes.size(); ++j)
+        for (int j = 0; j < colsB; ++j)
         {
-            tmp[i] += matrix[nodes.size() * i + j] * gradientX[j];
+            for (int k = 0; k < colsA; ++k)
+            {
+                result[colsB * i + j] += A[colsA * i + k] * B[colsB * k + j];
+            }
         }
-    }
-
-    double result = 0.0;
-
-    for (size_t i = 0; i < nodes.size(); ++i)
-    {
-        result += gradientY[i] * tmp[i];
     }
 
     return result;

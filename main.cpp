@@ -14,7 +14,16 @@ int main()
 
     cascade::Var w = (x + y) * z * x;
 
-    cascade::Var::covariance2(w, w);
+    std::cout << cascade::Var::covariance_(w, w) << std::endl;
+
+    std::cout << cascade::Var::setCovariance(w, x, 1.0) << std::endl;
+    std::cout << cascade::Var::setCovariance(w, y, 1.0) << std::endl;
+    std::cout << cascade::Var::setCovariance(w, z, 1.0) << std::endl;
+
+    std::vector<double> A {1, 2, 3, 0.1, 0.2, 0.3};
+    std::vector<double> B {1, -1, 0, 1, 1, 0.5};
+
+    std::vector<double> result = cascade::Var::matrixMultiply_(A, B, 2);
 
     return 0;
 }

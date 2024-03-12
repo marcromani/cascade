@@ -22,3 +22,8 @@ matrix = np.array([[sx * sx, xy, xz], [xy, sy * sy, yz], [xz, yz, sz * sz]])
 print(matrix)
 
 print(gradient.reshape(1, 3) @ matrix @ gradient.reshape(3, 1))
+
+A = np.array([[1, 2, 3], [0.1, 0.2, 0.3]])
+B = np.array([[1, -1], [0, 1], [1, 0.5]])
+
+print(A @ B)
