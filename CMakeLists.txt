@@ -5,17 +5,17 @@ project(cascade)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-option(BUILD_SHARED "Build shared library" ON)
+option(BUILD_SHARED "Build shared library" On)
 
 set(HEADERS
     # cmake-format: sort
-    include/node-add.h
-    include/node-div.h
-    include/node-mul.h
-    include/node-sub.h
-    include/node-var.h
-    include/node.h
-    include/var.h)
+    src/include/node-add.h
+    src/include/node-div.h
+    src/include/node-mul.h
+    src/include/node-sub.h
+    src/include/node-var.h
+    src/include/node.h
+    src/include/var.h)
 
 set(SOURCES
     # cmake-format: sort
