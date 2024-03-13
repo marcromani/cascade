@@ -40,10 +40,10 @@ public:
     int id() const;
 
     double value() const;
-    double sigma() const;
+    double sigma();
     double derivative() const;
 
-    static double covariance(const Var &, const Var &);
+    static double covariance(Var &, Var &);
     static bool setCovariance(Var &, Var &, double);
 
     void backprop();
@@ -54,7 +54,7 @@ public:
     friend Var operator*(Var, Var);
     friend Var operator/(Var, Var);
 
-    friend std::ostream &operator<<(std::ostream &, const Var &);
+    friend std::ostream &operator<<(std::ostream &, Var &);
 
 private:
     static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
@@ -68,13 +68,10 @@ private:
 
     std::vector<Var> inputNodes_() const;
 
-public:
-    // TODO
     static double covariance_(Var &, Var &);
 
     static std::vector<double> matrixMultiply_(const std::vector<double> &A, const std::vector<double> &B, int rowsA);
 
-private:
     std::shared_ptr<Node> node_;
 
     std::vector<Var> children_;

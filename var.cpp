@@ -7,8 +7,12 @@
 #include "node-var.h"
 
 #include <algorithm>
+#include <cmath>
+#include <memory>
+#include <ostream>
 #include <set>
 #include <stack>
+#include <vector>
 
 namespace cascade
 {
@@ -22,27 +26,56 @@ int Var::id() const { return node_->id_; }
 
 double Var::value() const { return node_->value_; }
 
-double Var::sigma() const { return node_->sigma_; }
+double Var::sigma()
+{
+    const std::shared_ptr<NodeVar> node = std::dynamic_pointer_cast<NodeVar>(node_);
+
+    if (node)
+    {
+        return node->sigma();
+    }
+    else
+    {
+        return std::sqrt(covariance_(*this, *this));
+    }
+}
 
 double Var::derivative() const { return node_->derivative_; }
 
-double Var::covariance(const Var &x, const Var &y) { return Node::covariance(x.node_, y.node_); }
+double Var::covariance(Var &x, Var &y)
+{
+    const std::shared_ptr<NodeVar> xNode = std::dynamic_pointer_cast<NodeVar>(x.node_);
+    const std::shared_ptr<NodeVar> yNode = std::dynamic_pointer_cast<NodeVar>(y.node_);
+
+    if (xNode && yNode)
+    {
+        return NodeVar::covariance(xNode, yNode);
+    }
+    else
+    {
+        return covariance_(x, y);
+    }
+}
 
 bool Var::setCovariance(Var &x, Var &y, double value)
 {
-    if (!std::dynamic_pointer_cast<NodeVar>(x.node_) || !std::dynamic_pointer_cast<NodeVar>(y.node_))
+    std::shared_ptr<NodeVar> xNode = std::dynamic_pointer_cast<NodeVar>(x.node_);
+    std::shared_ptr<NodeVar> yNode = std::dynamic_pointer_cast<NodeVar>(y.node_);
+
+    if (xNode && yNode)
+    {
+        NodeVar::setCovariance(xNode, yNode, value);
+        return true;
+    }
+    else
     {
         return false;
     }
-
-    Node::setCovariance(x.node_, y.node_, value);
-
-    return true;
 }
 
 void Var::backprop()
 {
-    std::vector<Var> nodes = sortedNodes_();
+    const std::vector<Var> nodes = sortedNodes_();
 
     for (const Var &node: nodes)
     {
@@ -51,7 +84,7 @@ void Var::backprop()
 
     node_->derivative_ = 1.0;
 
-    for (Var &node: nodes)
+    for (const Var &node: nodes)
     {
         node.node_->backprop_();
     }
@@ -101,7 +134,7 @@ Var operator/(Var x, Var y)
     return result;
 }
 
-std::ostream &operator<<(std::ostream &os, const Var &x)
+std::ostream &operator<<(std::ostream &os, Var &x)
 {
     os << x.value() << " ± " << x.sigma();
     return os;
@@ -109,7 +142,7 @@ std::ostream &operator<<(std::ostream &os, const Var &x)
 
 void Var::createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode)
 {
-    for (Var x: inputNodes)
+    for (const Var &x: inputNodes)
     {
         outputNode.children_.push_back(x);
         outputNode.node_->children_.push_back(x.node_);
@@ -162,7 +195,7 @@ std::vector<Var> Var::sortedNodes_() const
 
 std::vector<Var> Var::inputNodes_() const
 {
-    const std::vector<Var> &nodes = sortedNodes_();
+    const std::vector<Var> nodes = sortedNodes_();
 
     std::vector<Var> inputNodes;
     std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(inputNodes), [](const Var &node) {
@@ -175,71 +208,71 @@ std::vector<Var> Var::inputNodes_() const
 double Var::covariance_(Var &x, Var &y)
 {
     x.backprop();
-    std::vector<Var> nodesX = x.inputNodes_();
+    std::vector<Var> xNodes = x.inputNodes_();
 
     // Copy the gradients of the input nodes before backpropagating on the second graph
-    std::unordered_map<int, double> gradientXMap;
-    std::for_each(nodesX.begin(), nodesX.end(), [&gradientXMap](const Var &node) {
-        gradientXMap.insert({node.id(), node.derivative()});
+    std::unordered_map<int, double> xGradientMap;
+    std::for_each(xNodes.begin(), xNodes.end(), [&xGradientMap](const Var &node) {
+        xGradientMap.insert({node.id(), node.derivative()});
     });
 
     y.backprop();
-    const std::vector<Var> &nodesY = y.inputNodes_();
+    const std::vector<Var> yNodes = y.inputNodes_();
 
-    std::unordered_map<int, double> gradientYMap;
-    std::for_each(nodesY.begin(), nodesY.end(), [&gradientYMap](const Var &node) {
-        gradientYMap.insert({node.id(), node.derivative()});
+    std::unordered_map<int, double> yGradientMap;
+    std::for_each(yNodes.begin(), yNodes.end(), [&yGradientMap](const Var &node) {
+        yGradientMap.insert({node.id(), node.derivative()});
     });
 
-    // Identify all the input nodes
-    nodesX.insert(nodesX.end(), nodesY.begin(), nodesY.end());
+    xNodes.insert(xNodes.end(), yNodes.begin(), yNodes.end());
 
     auto comparator = [](const Var &x, const Var &y) { return x.id() < y.id(); };
-    std::set<Var, decltype(comparator)> nodes(nodesX.begin(), nodesX.end(), comparator);
+    std::set<Var, decltype(comparator)> nodes(xNodes.begin(), xNodes.end(), comparator);
 
-    std::vector<double> gradientX, gradientY;
+    std::vector<double> xGradient, yGradient;
 
     for (const Var &node: nodes)
     {
         {
-            auto search = gradientXMap.find(node.id());
+            auto search = xGradientMap.find(node.id());
 
-            if (search != gradientXMap.end())
+            if (search != xGradientMap.end())
             {
-                gradientX.push_back(search->second);
+                xGradient.push_back(search->second);
             }
             else
             {
-                gradientX.push_back(0.0);
+                xGradient.push_back(0.0);
             }
         }
 
         {
-            auto search = gradientYMap.find(node.id());
+            auto search = yGradientMap.find(node.id());
 
-            if (search != gradientYMap.end())
+            if (search != yGradientMap.end())
             {
-                gradientY.push_back(search->second);
+                yGradient.push_back(search->second);
             }
             else
             {
-                gradientY.push_back(0.0);
+                yGradient.push_back(0.0);
             }
         }
     }
 
     std::vector<double> matrix;
 
-    for (const Var &row: nodes)
+    for (Var row: nodes)
     {
-        for (const Var &col: nodes)
+        for (Var col: nodes)
         {
+            // This doesn't end up being a recursive call chain since `nodes` contains leaf variables
             matrix.push_back(covariance(row, col));
         }
     }
 
-    std::vector<double> result = matrixMultiply_(matrix, gradientX, nodes.size());
-    result                     = matrixMultiply_(gradientY, result, 1);
+    std::vector<double> result = matrixMultiply_(matrix, xGradient, nodes.size());
+    result                     = matrixMultiply_(yGradient, result, 1);
 
     return result[0];
 }
