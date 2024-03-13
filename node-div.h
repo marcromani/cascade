@@ -11,7 +11,7 @@ public:
     using Node::Node;
 
 private:
-    void backprop_();
+    void backprop_() override;
 };
 }  // namespace cascade
 

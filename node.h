@@ -12,7 +12,7 @@ class Node
 
 public:
     Node();
-    Node(double value);
+    explicit Node(double value);
 
     int id() const;
 

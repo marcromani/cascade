@@ -12,7 +12,7 @@ class NodeVar final : public Node
 {
 public:
     NodeVar();
-    NodeVar(double value);
+    explicit NodeVar(double value);
     NodeVar(double value, double sigma);
 
     double sigma() const;
@@ -23,7 +23,7 @@ public:
 private:
     std::unordered_map<int, double> covariance_;
 
-    void backprop_();
+    void backprop_() override;
 };
 }  // namespace cascade
 
