@@ -20,7 +20,7 @@ Var::Var() : Var(0.0) {}
 
 Var::Var(double value) : Var(value, 0.0) {}
 
-Var::Var(double value, double sigma) : node_(new NodeVar(value, sigma)) {}
+Var::Var(double value, double sigma) : node_(std::make_shared<NodeVar>(value, sigma)) {}
 
 int Var::id() const { return node_->id_; }
 
@@ -94,7 +94,7 @@ Var operator+(Var x, Var y)
 {
     Var result = x.value() + y.value();
 
-    result.node_ = std::shared_ptr<Node>(new NodeAdd(result.value()));
+    result.node_ = std::make_shared<NodeAdd>(result.value());
 
     Var::createEdges_({x, y}, result);
 
@@ -105,7 +105,7 @@ Var operator-(Var x, Var y)
 {
     Var result = x.value() - y.value();
 
-    result.node_ = std::shared_ptr<Node>(new NodeSub(result.value()));
+    result.node_ = std::make_shared<NodeSub>(result.value());
 
     Var::createEdges_({x, y}, result);
 
@@ -116,7 +116,7 @@ Var operator*(Var x, Var y)
 {
     Var result = x.value() * y.value();
 
-    result.node_ = std::shared_ptr<Node>(new NodeMul(result.value()));
+    result.node_ = std::make_shared<NodeMul>(result.value());
 
     Var::createEdges_({x, y}, result);
 
@@ -127,7 +127,7 @@ Var operator/(Var x, Var y)
 {
     Var result = x.value() / y.value();
 
-    result.node_ = std::shared_ptr<Node>(new NodeDiv(result.value()));
+    result.node_ = std::make_shared<NodeDiv>(result.value());
 
     Var::createEdges_({x, y}, result);
 
