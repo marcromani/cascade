@@ -32,7 +32,7 @@ protected:
     double derivative_;
 
     std::vector<std::shared_ptr<Node>> children_;
-    std::vector<std::shared_ptr<Node>> parents_;
+    std::vector<std::weak_ptr<Node>> parents_;
 
 private:
     virtual void backprop_() = 0;
