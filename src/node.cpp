@@ -8,6 +8,8 @@ Node::Node() : Node(0.0) {}
 
 Node::Node(double value) : id_(counter_), value_(value), derivative_(0.0) { ++counter_; }
 
+Node::~Node() {}
+
 int Node::id() const { return id_; }
 
 double Node::value() const { return value_; }

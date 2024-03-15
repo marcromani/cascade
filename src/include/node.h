@@ -14,6 +14,8 @@ public:
     Node();
     explicit Node(double value);
 
+    virtual ~Node();
+
     int id() const;
 
     double value() const;
