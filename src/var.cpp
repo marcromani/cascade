@@ -5,6 +5,7 @@
 #include "node_mul.h"
 #include "node_sub.h"
 #include "node_var.h"
+#include "util.h"
 
 #include <algorithm>
 #include <cmath>
@@ -271,30 +272,9 @@ double Var::covariance_(Var &x, Var &y)
         }
     }
 
-    std::vector<double> result = matrixMultiply_(matrix, xGradient, nodes.size());
-    result                     = matrixMultiply_(yGradient, result, 1);
+    std::vector<double> result = multiply(matrix, xGradient, nodes.size());
+    result                     = multiply(yGradient, result, 1);
 
     return result[0];
-}
-
-std::vector<double> Var::matrixMultiply_(const std::vector<double> &A, const std::vector<double> &B, int rowsA)
-{
-    const int colsA = A.size() / rowsA;
-    const int colsB = B.size() / colsA;
-
-    std::vector<double> result(rowsA * colsB, 0.0);
-
-    for (int i = 0; i < rowsA; ++i)
-    {
-        for (int j = 0; j < colsB; ++j)
-        {
-            for (int k = 0; k < colsA; ++k)
-            {
-                result[colsB * i + j] += A[colsA * i + k] * B[colsB * k + j];
-            }
-        }
-    }
-
-    return result;
 }
 }  // namespace cascade

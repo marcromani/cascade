@@ -8,6 +8,7 @@ set(HEADERS
     include/node_mul.h
     include/node_sub.h
     include/node_var.h
+    include/util.h
     include/var.h)
 
 set(SOURCES
@@ -18,6 +19,7 @@ set(SOURCES
     node_mul.cpp
     node_sub.cpp
     node_var.cpp
+    util.cpp
     var.cpp)
 
 if(BUILD_SHARED)

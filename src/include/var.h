@@ -70,8 +70,6 @@ private:
 
     static double covariance_(Var &, Var &);
 
-    static std::vector<double> matrixMultiply_(const std::vector<double> &A, const std::vector<double> &B, int rowsA);
-
     std::shared_ptr<Node> node_;
 
     std::vector<Var> children_;
