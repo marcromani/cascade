@@ -3,9 +3,20 @@ cmake_minimum_required(VERSION 3.16)
 project(cascade)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-option(BUILD_SHARED "Build shared library" On)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip
+)
+
+set(gtest_force_shared_crt
+    ON
+    CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+option(BUILD_SHARED "Build as shared library" ON)
 
 set(HEADERS
     # cmake-format: sort
