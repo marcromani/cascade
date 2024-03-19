@@ -12,7 +12,7 @@ set(gtest_force_shared_crt
 FetchContent_MakeAvailable(googletest)
 
 set(SOURCES # cmake-format: sort
-            covariance-tests.cpp derivative-tests.cpp matrix-tests.cpp)
+            covariance_tests.cpp derivative_tests.cpp matrix_tests.cpp)
 
 add_executable(run_tests ${SOURCES})
 
