@@ -1,4 +1,4 @@
-#include "node-mul.h"
+#include "node_mul.h"
 
 namespace cascade
 {

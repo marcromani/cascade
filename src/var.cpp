@@ -1,10 +1,10 @@
 #include "var.h"
 
-#include "node-add.h"
-#include "node-div.h"
-#include "node-mul.h"
-#include "node-sub.h"
-#include "node-var.h"
+#include "node_add.h"
+#include "node_div.h"
+#include "node_mul.h"
+#include "node_sub.h"
+#include "node_var.h"
 
 #include <algorithm>
 #include <cmath>
