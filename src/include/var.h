@@ -43,6 +43,8 @@ public:
     double sigma() const;
     double derivative() const;
 
+    bool setSigma(double);
+
     static double covariance(const Var &, const Var &);
     static bool setCovariance(Var &, Var &, double);
 

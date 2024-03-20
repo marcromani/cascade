@@ -43,6 +43,8 @@ double Var::sigma() const
 
 double Var::derivative() const { return node_->derivative_; }
 
+bool Var::setSigma(double value) { return setCovariance(*this, *this, value); }
+
 double Var::covariance(const Var &x, const Var &y)
 {
     const std::shared_ptr<NodeVar> xNode = std::dynamic_pointer_cast<NodeVar>(x.node_);
