@@ -20,8 +20,9 @@ set(INSTALL_GTEST
 
 FetchContent_MakeAvailable(googletest)
 
-set(SOURCES # cmake-format: sort
-            covariance_tests.cpp derivative_tests.cpp matrix_tests.cpp)
+set(SOURCES
+    # cmake-format: sort
+    covariance_tests.cpp derivative_tests.cpp matrix_tests.cpp var_tests.cpp)
 
 add_executable(run_tests ${SOURCES})
 
