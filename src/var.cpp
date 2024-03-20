@@ -27,7 +27,7 @@ int Var::id() const { return node_->id_; }
 
 double Var::value() const { return node_->value_; }
 
-double Var::sigma()
+double Var::sigma() const
 {
     const std::shared_ptr<NodeVar> node = std::dynamic_pointer_cast<NodeVar>(node_);
 
@@ -43,7 +43,7 @@ double Var::sigma()
 
 double Var::derivative() const { return node_->derivative_; }
 
-double Var::covariance(Var &x, Var &y)
+double Var::covariance(const Var &x, const Var &y)
 {
     const std::shared_ptr<NodeVar> xNode = std::dynamic_pointer_cast<NodeVar>(x.node_);
     const std::shared_ptr<NodeVar> yNode = std::dynamic_pointer_cast<NodeVar>(y.node_);
@@ -74,7 +74,7 @@ bool Var::setCovariance(Var &x, Var &y, double value)
     }
 }
 
-void Var::backprop()
+void Var::backprop() const
 {
     const std::vector<Var> nodes = sortedNodes_();
 
@@ -206,7 +206,7 @@ std::vector<Var> Var::inputNodes_() const
     return inputNodes;
 }
 
-double Var::covariance_(Var &x, Var &y)
+double Var::covariance_(const Var &x, const Var &y)
 {
     x.backprop();
     std::vector<Var> xNodes = x.inputNodes_();

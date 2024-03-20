@@ -40,13 +40,13 @@ public:
     int id() const;
 
     double value() const;
-    double sigma();
+    double sigma() const;
     double derivative() const;
 
-    static double covariance(Var &, Var &);
+    static double covariance(const Var &, const Var &);
     static bool setCovariance(Var &, Var &, double);
 
-    void backprop();
+    void backprop() const;
 
     // Math operators
     friend Var operator+(Var, Var);
@@ -68,7 +68,7 @@ private:
 
     std::vector<Var> inputNodes_() const;
 
-    static double covariance_(Var &, Var &);
+    static double covariance_(const Var &, const Var &);
 
     std::shared_ptr<Node> node_;
 
