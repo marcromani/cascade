@@ -57,7 +57,7 @@ TEST(CovarianceTests, varianceOfLinearFunctionNodeTest)
     cascade::Var::setCovariance(x, z, 2);
     cascade::Var::setCovariance(y, z, 1);
 
-    const cascade::Var w = -2 * x + 3 * y + z;
+    const cascade::Var w = -2 * x + 3 * y + z - 12;
 
     const double expectedVariance = 85.8;
 
