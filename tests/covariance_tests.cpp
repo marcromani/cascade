@@ -1,9 +1,8 @@
 #include "var.h"
 
-#include <cmath>
 #include <gtest/gtest.h>
 
-TEST(CovarianceTests, sigmaAndVarianceConsistencyTest)
+TEST(CovarianceTests, sigmaAndVarianceConsistencyForLeafNodeTest)
 {
     cascade::Var x = {10, 1.5};
 
@@ -16,7 +15,7 @@ TEST(CovarianceTests, sigmaAndVarianceConsistencyTest)
         << "The standard deviation is not the square root of the variance";
 }
 
-TEST(CovarianceTests, sigmaAndVarianceConsistencyForFunctionTest)
+TEST(CovarianceTests, sigmaAndVarianceConsistencyForFunctionNodeTest)
 {
     cascade::Var x = {2, 1.5};
     cascade::Var y = {-3, 2.5};
@@ -32,7 +31,7 @@ TEST(CovarianceTests, sigmaAndVarianceConsistencyForFunctionTest)
         << "The standard deviation is not the square root of the variance";
 }
 
-TEST(CovarianceTests, sigmaIsFixedForFunctionTest)
+TEST(CovarianceTests, sigmaIsFixedForFunctionNodeTest)
 {
     const cascade::Var x = {1, 3};
     const cascade::Var y = {2, 0.2};
@@ -43,9 +42,28 @@ TEST(CovarianceTests, sigmaIsFixedForFunctionTest)
     EXPECT_DOUBLE_EQ(z.sigma() * z.sigma(), 36.04) << "Sigma is manually changed on a functional node";
 }
 
-TEST(CovarianceTests, varianceOfLinearFunctionTest) {}
+TEST(CovarianceTests, varianceOfLinearFunctionNodeTest)
+{
+    cascade::Var x = 2;
+    cascade::Var y = -1;
+    cascade::Var z = 0.1;
 
-TEST(CovarianceTests, varianceOfNonlinearFunctionTest)
+    x.setSigma(1);
+    y.setSigma(3);
+    z.setSigma(2);
+
+    cascade::Var::setCovariance(x, y, 0.1);
+    cascade::Var::setCovariance(x, z, 2);
+    cascade::Var::setCovariance(y, z, 1);
+
+    const cascade::Var w = -2 * x + 3 * y + z;
+
+    const double expectedVariance = 85.8;
+
+    EXPECT_DOUBLE_EQ(w.sigma() * w.sigma(), expectedVariance) << "Wrong value after variance propagation";
+}
+
+TEST(CovarianceTests, varianceOfNonlinearFunctionNodeTest)
 {
     cascade::Var x = {2, 1};
     cascade::Var y = {-1, 2};
@@ -59,7 +77,7 @@ TEST(CovarianceTests, varianceOfNonlinearFunctionTest)
 
     const double expectedVariance = 397;
 
-    EXPECT_DOUBLE_EQ(w.sigma(), std::sqrt(expectedVariance)) << "Wrong value after variance propagation";
+    EXPECT_DOUBLE_EQ(w.sigma() * w.sigma(), expectedVariance) << "Wrong value after variance propagation";
 }
 
-TEST(CovarianceTests, covarianceOfNonlinearFunctionsTest) {}
+TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest) {}
