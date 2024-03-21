@@ -56,6 +56,10 @@ public:
     friend Var operator*(Var, Var);
     friend Var operator/(Var, Var);
 
+    // Unary functions
+    friend Var sin(Var);
+    friend Var cos(Var);
+
     friend std::ostream &operator<<(std::ostream &, Var &);
 
 private:

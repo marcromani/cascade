@@ -4,8 +4,10 @@ set(HEADERS
     # cmake-format: sort
     include/node.h
     include/node_add.h
+    include/node_cos.h
     include/node_div.h
     include/node_mul.h
+    include/node_sin.h
     include/node_sub.h
     include/node_var.h
     include/util.h
@@ -13,10 +15,13 @@ set(HEADERS
 
 set(SOURCES
     # cmake-format: sort
+    functions.cpp
     node.cpp
     node_add.cpp
+    node_cos.cpp
     node_div.cpp
     node_mul.cpp
+    node_sin.cpp
     node_sub.cpp
     node_var.cpp
     util.cpp
