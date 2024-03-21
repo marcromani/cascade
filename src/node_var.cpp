@@ -53,11 +53,11 @@ void NodeVar::setCovariance(std::shared_ptr<NodeVar>& x, std::shared_ptr<NodeVar
 {
     if (x->id_ < y->id_)
     {
-        x->covariance_.emplace(y->id_, value);
+        x->covariance_[y->id_] = value;
     }
     else
     {
-        y->covariance_.emplace(x->id_, value);
+        y->covariance_[x->id_] = value;
     }
 }
 
