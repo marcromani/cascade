@@ -43,7 +43,7 @@ double Var::sigma() const
 
 double Var::derivative() const { return node_->derivative_; }
 
-bool Var::setSigma(double value) { return setCovariance(*this, *this, value); }
+bool Var::setSigma(double value) { return setCovariance(*this, *this, value * value); }
 
 double Var::covariance(const Var &x, const Var &y)
 {
@@ -216,7 +216,7 @@ double Var::covariance_(const Var &x, const Var &y)
     // Copy the gradients of the input nodes before backpropagating on the second graph
     std::unordered_map<int, double> xGradientMap;
     std::for_each(xNodes.begin(), xNodes.end(), [&xGradientMap](const Var &node) {
-        xGradientMap.insert({node.id(), node.derivative()});
+        xGradientMap.emplace(node.id(), node.derivative());
     });
 
     y.backprop();
@@ -224,7 +224,7 @@ double Var::covariance_(const Var &x, const Var &y)
 
     std::unordered_map<int, double> yGradientMap;
     std::for_each(yNodes.begin(), yNodes.end(), [&yGradientMap](const Var &node) {
-        yGradientMap.insert({node.id(), node.derivative()});
+        yGradientMap.emplace(node.id(), node.derivative());
     });
 
     xNodes.insert(xNodes.end(), yNodes.begin(), yNodes.end());
