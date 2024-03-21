@@ -1,3 +1,5 @@
+#include "math.h"
+
 #include "node_cos.h"
 #include "node_sin.h"
 #include "var.h"

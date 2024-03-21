@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef CASCADE_UTIL_H
+#define CASCADE_UTIL_H
 
 #include <vector>
 

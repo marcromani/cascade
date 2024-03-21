@@ -1,5 +1,5 @@
-#ifndef NODE_SIN
-#define NODE_SIN
+#ifndef CASCADE_NODE_SIN
+#define CASCADE_NODE_SIN
 
 #include "node.h"
 

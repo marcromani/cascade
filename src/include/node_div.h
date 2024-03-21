@@ -1,5 +1,5 @@
-#ifndef NODE_DIV_H
-#define NODE_DIV_H
+#ifndef CASCADE_NODE_DIV_H
+#define CASCADE_NODE_DIV_H
 
 #include "node.h"
 

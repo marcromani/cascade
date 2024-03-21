@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 set(HEADERS
     # cmake-format: sort
+    include/math.h
     include/node.h
     include/node_add.h
     include/node_cos.h
@@ -15,7 +16,7 @@ set(HEADERS
 
 set(SOURCES
     # cmake-format: sort
-    functions.cpp
+    math.cpp
     node.cpp
     node_add.cpp
     node_cos.cpp

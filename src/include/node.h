@@ -1,5 +1,5 @@
-#ifndef NODE_H
-#define NODE_H
+#ifndef CASCADE_NODE_H
+#define CASCADE_NODE_H
 
 #include <memory>
 #include <vector>

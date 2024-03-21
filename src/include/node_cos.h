@@ -1,5 +1,5 @@
-#ifndef NODE_COS
-#define NODE_COS
+#ifndef CASCADE_NODE_COS
+#define CASCADE_NODE_COS
 
 #include "node.h"
 

@@ -1,5 +1,5 @@
-#ifndef NODE_MUL_H
-#define NODE_MUL_H
+#ifndef CASCADE_NODE_MUL_H
+#define CASCADE_NODE_MUL_H
 
 #include "node.h"
 

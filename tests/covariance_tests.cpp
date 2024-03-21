@@ -1,3 +1,4 @@
+#include "math.h"
 #include "var.h"
 
 #include <gtest/gtest.h>
@@ -81,4 +82,11 @@ TEST(CovarianceTests, varianceOfNonlinearFunctionNodeTest)
     EXPECT_DOUBLE_EQ(w.sigma() * w.sigma(), expectedVariance) << "Wrong value after variance propagation";
 }
 
-TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest) {}
+TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest)
+{
+    cascade::Var x = {-1, 1};
+    cascade::Var y = {3, 0.5};
+    cascade::Var z = {0.5, 2};
+
+    cascade::Var f = (x + z) * cascade::sin(x);
+}
