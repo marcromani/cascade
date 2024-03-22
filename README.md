@@ -6,7 +6,7 @@ Cascade is a C++ library designed for error propagation using automatic differen
 
 Create a `build` folder in the root directory and `cd` it. Build the library and tests executable with:
 
-```bash
+```
 cmake ..
 cmake --build .
 ```
@@ -17,13 +17,13 @@ The library is built in `build/src` and the tests executable in `build/tests`.
 
 To further install the library do:
 
-```bash
+```
 cmake --build . --target install
 ```
 
 If you want to install the library in a custom directory set the install path first:
 
-```bash
+```
 cmake -DCMAKE_INSTALL_PREFIX=/install/path ..
 cmake --build . --target install
 ```
@@ -31,6 +31,57 @@ cmake --build . --target install
 To use Cascade in your project simply include the Cascade header files and link against the library.
 
 ## Examples
+
+### Source
+
+```c++
+#include "math.h"
+#include "var.h"
+
+#include <iostream>
+
+int main()
+{
+    cascade::Var x = {2, 1.5};
+    cascade::Var y = {-3, 2.5};
+    cascade::Var z = {5, 1.2};
+
+    cascade::Var::setCovariance(x, y, 0.5);
+    cascade::Var::setCovariance(x, z, 1.8);
+
+    if (!cascade::Var::setCovariance(y, z, -1))
+    {
+        std::cout << "This should not be printed" << std::endl;
+    }
+
+    cascade::Var w = (x + y) * cascade::cos(z) * x;
+
+    if (!cascade::Var::setCovariance(w, x, 1.0))
+    {
+        std::cout << "Covariance involving a functional variable cannot be set" << std::endl;
+    }
+
+    std::cout << cascade::Var::covariance(w, x) << std::endl;
+    std::cout << cascade::Var::covariance(w, y) << std::endl;
+    std::cout << cascade::Var::covariance(w, z) << std::endl;
+
+    std::cout << cascade::Var::covariance(w, w) << std::endl;
+    std::cout << w.sigma() * w.sigma() << std::endl;
+
+    return 0;
+}
+```
+
+### Output
+
+```
+Covariance involving a functional variable cannot be set
+-2.53023
+5.60546
+-2.81843
+7.86771
+7.86771
+```
 
 ## License
 
