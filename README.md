@@ -28,7 +28,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/install/path ..
 cmake --build . --target install
 ```
 
-To use Cascade in your project, simply include the Cascade header files and link against the library.
+To use Cascade in your project simply include the Cascade header files and link against the library.
 
 ## Examples
 
