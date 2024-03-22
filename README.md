@@ -1,4 +1,4 @@
-# Cascade
+![Library logo](https://raw.githubusercontent.com/marcromani/cascade/main/media/logo.png)
 
 Cascade is a C++ library designed for error propagation using automatic differentiation. It allows users to compute gradients of an expression and then use them to propagate uncertainties in the input to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
 
