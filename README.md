@@ -1,4 +1,6 @@
-![Library logo](https://raw.githubusercontent.com/marcromani/cascade/main/media/logo.png)
+<div align="center">
+<img src="https://raw.githubusercontent.com/marcromani/cascade/main/media/logo.png" alt="Library logo" width="600"/>
+</div>
 
 #
 
