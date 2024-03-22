@@ -44,7 +44,3 @@ install(
   ARCHIVE DESTINATION lib)
 
 install(FILES ${HEADERS} DESTINATION include)
-
-add_executable(main main.cpp)
-
-target_link_libraries(main PRIVATE cascade)
