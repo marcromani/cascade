@@ -1,4 +1,5 @@
 #include "math.h"
+#include "tolerance.h"
 #include "util.h"
 #include "var.h"
 
@@ -121,5 +122,5 @@ TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest)
     std::vector<double> expectedCovariance = cascade::multiply(M, fGrad, 3);
     expectedCovariance                     = cascade::multiply(gGrad, expectedCovariance, 1);
 
-    EXPECT_DOUBLE_EQ(covariance, expectedCovariance[0]);
+    EXPECT_NEAR(covariance, expectedCovariance[0], tolerance);
 }

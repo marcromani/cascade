@@ -28,6 +28,8 @@ add_executable(run_tests ${SOURCES})
 
 enable_testing()
 
+target_include_directories(run_tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 target_link_libraries(run_tests cascade GTest::gtest_main)
 
 include(GoogleTest)
