@@ -122,5 +122,5 @@ TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest)
     std::vector<double> expectedCovariance = cascade::multiply(M, fGrad, 3);
     expectedCovariance                     = cascade::multiply(gGrad, expectedCovariance, 1);
 
-    EXPECT_NEAR(covariance, expectedCovariance[0], tolerance);
+    EXPECT_NEAR(covariance, expectedCovariance[0], tolerance) << "Wrong value after variance propagation";
 }
