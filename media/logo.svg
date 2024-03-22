@@ -25,8 +25,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="2.0879489"
-     inkscape:cx="336.69406"
-     inkscape:cy="559.40066"
+     inkscape:cx="299.81577"
+     inkscape:cy="513.42252"
      inkscape:window-width="1920"
      inkscape:window-height="1015"
      inkscape:window-x="0"
@@ -111,21 +111,24 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.339605;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       style="fill:none;fill-opacity:1;stroke:none;stroke-width:0.300104;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="rect62"
        width="71.549889"
-       height="18.88892"
+       height="14.750363"
        x="69.225052"
-       y="135.11589" />
+       y="136.42522"
+       inkscape:export-filename="logo.png"
+       inkscape:export-xdpi="312.82584"
+       inkscape:export-ydpi="312.82584" />
     <circle
        style="fill:url(#linearGradient58);fill-opacity:1;stroke:#ffffff;stroke-width:0.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path42-9-8-3-8"
        cx="122.26496"
        cy="138.41547"
-       r="1.8199883"
        inkscape:export-filename="logo.png"
        inkscape:export-xdpi="312.82584"
-       inkscape:export-ydpi="312.82584" />
+       inkscape:export-ydpi="312.82584"
+       r="1.8199883" />
     <circle
        style="fill:url(#linearGradient57);fill-opacity:1;stroke:#ffffff;stroke-width:0.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        id="path42-9-8-3-7"
