@@ -93,7 +93,7 @@ Cascade is licensed under the [MIT License](LICENSE).
 
 ## Background
 
-Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary (piecewise) differentiable functions. The key concept behind this technique is compositionality. Each function defines a (acyclic) computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allow the derivatives to flow backwards, from the output to the inputs. For example,
+Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary (piecewise) differentiable functions. The key concept behind this technique is compositionality. Each function defines a (acyclic) computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allow the derivatives to flow backwards, from the output to the inputs. For example, this is the graph for $x^2 \sin{y} + e^{x/z}$:
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/marcromani/cascade/doc/media/graph.png" alt="Function graph"/>
