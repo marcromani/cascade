@@ -102,7 +102,7 @@ Cascade uses reverse mode automatic differentiation, most commonly known as back
 Here each node is given a name and is already indexed following a topological order. The partial derivative of the function with respect to $x$ corresponds to adding all the paths from the output node to the $x$ node, where the value of each path is the product of the values of its edges:
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/marcromani/cascade/doc/media/derivative-graph.png" alt="Function derivative graph"/>
+<img src="https://raw.githubusercontent.com/marcromani/cascade/doc/media/derivative_graph.png" alt="Function derivative graph"/>
 </div>
 
 ```math
