@@ -93,6 +93,28 @@ Cascade is licensed under the [MIT License](LICENSE).
 
 ## Background
 
+Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary (piecewise) differentiable functions. The key concept behind this technique is compositionality. Each function defines a (acyclic) computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allow the derivatives to flow backwards, from the output to the inputs. For example,
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/marcromani/cascade/main/media/graph.png" alt="Function graph"/>
+</div>
+
+Here each node is given a name and is already indexed following a topological order. The partial derivative of the function with respect to $x$ corresponds to adding all the paths from the output node to the $x$ node, where the value of each path is the product of the values of its edges:
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/marcromani/cascade/main/media/derivative-graph.png" alt="Function derivative graph"/>
+</div>
+
+```math
+\begin{align*}
+\frac{\partial\omega_9}{\partial x} = & \, \frac{\partial\omega_9}{\partial\omega_7}\frac{\partial\omega_7}{\partial x} + \frac{\partial\omega_9}{\partial\omega_8}\frac{\partial\omega_8}{\partial x} \\
+= & \, \frac{\partial\omega_9}{\partial\omega_7} \left(\frac{\partial\omega_7}{\partial\omega_4}\frac{\partial\omega_4}{\partial x} + \frac{\partial\omega_7}{\partial\omega_5}\frac{\partial\omega_5}{\partial x}\right) + \frac{\partial\omega_9}{\partial\omega_8}\left(\frac{\partial\omega_8}{\partial\omega_6}\frac{\partial\omega_6}{\partial x}\right) \\
+= & \, \frac{\partial\omega_9}{\partial\omega_7} \left(\frac{\partial\omega_7}{\partial\omega_4}\left(\frac{\partial\omega_4}{\partial\omega_2}\frac{\partial\omega_2}{\partial x}\right) + \frac{\partial\omega_7}{\partial\omega_5}\left(\frac{\partial\omega_5}{\partial\omega_1}\frac{\partial\omega_1}{\partial x}\right)\right) + \frac{\partial\omega_9}{\partial\omega_8}\left(\frac{\partial\omega_8}{\partial\omega_6}\left(\frac{\partial\omega_6}{\partial\omega_1}\frac{\partial\omega_1}{\partial x} + \frac{\partial\omega_6}{\partial\omega_3}\frac{\partial\omega_3}{\partial x}\right)\right) \\
+= & \, \frac{\partial\omega_9}{\partial\omega_7} \left(\frac{\partial\omega_7}{\partial\omega_4}\left(\frac{\partial\omega_4}{\partial\omega_2}\cdot0\right) + \frac{\partial\omega_7}{\partial\omega_5}\left(\frac{\partial\omega_5}{\partial\omega_1}\cdot1\right)\right) + \frac{\partial\omega_9}{\partial\omega_8}\left(\frac{\partial\omega_8}{\partial\omega_6}\left(\frac{\partial\omega_6}{\partial\omega_1}\cdot1 + \frac{\partial\omega_6}{\partial\omega_3}\cdot0\right)\right) \\
+= & \, \frac{\partial\omega_9}{\partial\omega_7}\frac{\partial\omega_7}{\partial\omega_5}\frac{\partial\omega_5}{\partial\omega_1} + \frac{\partial\omega_9}{\partial\omega_8}\frac{\partial\omega_8}{\partial\omega_6}\frac{\partial\omega_6}{\partial\omega_1}\,.
+\end{align*}
+```
+
 Suppose you have a set of $n$ distinct variables that you observe over time, each of which comes with some error. If you can further estimate the size of these errors and the size of the correlations between the variables, you can model the source of your observations as a random vector $\boldsymbol{X} = (X_1, \ldots, X_n)$ with expected value
 
 ```math
