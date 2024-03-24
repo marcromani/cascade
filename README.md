@@ -4,7 +4,7 @@
 
 #
 
-**Cascade** is a C++ library designed for error propagation using automatic differentiation. It allows users to compute gradients of an expression and then use them to propagate uncertainties in the input to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
+**Cascade** is a C++ library for automatic differentiation and error propagation. It provides a streamlined engine that allows you to effortlessly compute gradients of an arbitrary function and also propagate uncertainties in its inputs to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
 
 ## How to build
 
@@ -93,7 +93,7 @@ Cascade is licensed under the [MIT License](LICENSE).
 
 ## Background
 
-Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary piecewise differentiable functions. The key concept behind this technique is compositionality. Each function defines an acyclic computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allowing the derivatives to flow backwards, from the output to the inputs. For example, the graph of $x^2 \sin{y} + e^{x/z}$ has the form
+Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary piecewise differentiable functions. The key concept behind this technique is compositionality. Each function defines an acyclic computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allowing the derivatives to flow backwards, from the output to the inputs. For example, the graph of $x^2 \sin{y} + e^{x/z}$ has the form:
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/marcromani/cascade/doc/media/graph.png" alt="Function graph"/>
@@ -119,7 +119,7 @@ Formally,
 \end{align*}
 ```
 
-Suppose you have a set of $n$ distinct variables that you observe over time, each of which comes with some error. If you can further estimate the size of these errors and the size of the correlations between the variables, you can model the source of your observations as a random vector $\boldsymbol{X} = (X_1, \ldots, X_n)$ with expected value
+Now, suppose you have a set of $n$ distinct variables that you observe over time, each of which comes with some error. If you can further estimate the size of these errors and the size of the correlations between the variables, you can model the source of your observations as a random vector $\boldsymbol{X} = (X_1, \ldots, X_n)$ with expected value
 
 ```math
 \text{E}\left[\boldsymbol{X}\right] = (\text{E}\left[X_1\right], \ldots, \text{E}\left[X_n\right]) = (\mu_1, \ldots, \mu_n) = \boldsymbol{\mu}
