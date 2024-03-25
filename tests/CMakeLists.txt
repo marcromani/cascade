@@ -6,6 +6,8 @@ FetchContent_Declare(
   URL https://github.com/google/googletest/archive/f8d7d77c06936315286eb55f8de22cd23c188571.zip
 )
 
+set(GTEST_LINKED_AS_SHARED_LIBRARY TRUE)
+
 set(gtest_force_shared_crt
     ON
     CACHE BOOL "" FORCE)
