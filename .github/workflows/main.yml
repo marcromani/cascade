@@ -23,13 +23,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Ubuntu environment
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake
+
+      - name: Set up Windows + clang environment
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
+        run: choco install ninja -y
 
       - name: Configure CMake for Ubuntu + gcc
         if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
@@ -39,9 +43,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build
 
-      - name: Configure CMake for Windows
-        if: matrix.os == 'windows-latest'
+      - name: Configure CMake for Windows + clang
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -G Ninja -B build
+
+      - name: Configure CMake for Windows + MVSC
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'MVSC'
+        run: cmake -DCMAKE_BUILD_TYPE=Release -B build
 
       - name: Build
         run: cmake --build build
