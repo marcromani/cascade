@@ -11,11 +11,11 @@ set(gtest_force_shared_crt
     CACHE BOOL "" FORCE)
 
 set(BUILD_GMOCK
-    OFF
+    ON
     CACHE BOOL "" FORCE)
 
 set(INSTALL_GTEST
-    OFF
+    ON
     CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
