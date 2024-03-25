@@ -35,7 +35,6 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: |
           choco install llvm
-          refreshenv
 
       - name: Set up Windows + MSVC environment
         if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
