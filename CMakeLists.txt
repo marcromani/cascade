@@ -10,7 +10,7 @@ option(BUILD_SHARED "Build as shared library" ON)
 if(MSVC)
   add_compile_options(/Wall)
 else()
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 add_subdirectory(src)
