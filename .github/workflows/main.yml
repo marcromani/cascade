@@ -51,8 +51,8 @@ jobs:
 
       - name: Run tests
         if: matrix.os == 'ubuntu-latest'
-        run: ./home/runner/work/cascade/cascade/build/run_tests
+        run: ./build/tests/run_tests
 
       - name: Run tests
         if: matrix.os == 'windows-latest'
-        run: .\build\run_tests.exe
+        run: .\build\tests\run_tests.exe
