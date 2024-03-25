@@ -44,7 +44,7 @@ jobs:
           refreshenv
 
       - name: Configure CMake
-        run: cmake -B build
+        run: cmake -DCMAKE_COMPILER_CXX=CXX=${{ matrix.compiler }} -B build
 
       - name: Build
         run: cmake --build build --config Release
