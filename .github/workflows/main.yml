@@ -31,17 +31,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake
 
-      - name: Set up Windows + Clang environment
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
-        run: |
-          choco install llvm
-
-      - name: Set up Windows + MSVC environment
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
-        run: |
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-          choco install visualstudio2019-workload-vctools
-
       - name: Configure CMake for Ubuntu + gcc
         if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -B build
