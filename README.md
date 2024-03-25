@@ -39,7 +39,7 @@ To use Cascade in your project simply include the Cascade header files and link 
 ### Source
 
 ```c++
-#include "math.h"
+#include "functions.h"
 #include "var.h"
 
 #include <iostream>

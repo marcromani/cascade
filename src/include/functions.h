@@ -1,5 +1,5 @@
-#ifndef CASCADE_MATH_H
-#define CASCADE_MATH_H
+#ifndef CASCADE_FUNCTIONS_H
+#define CASCADE_FUNCTIONS_H
 
 #include "var.h"
 

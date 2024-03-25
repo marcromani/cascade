@@ -1,4 +1,4 @@
-#include "math.h"
+#include "functions.h"
 
 #include "node_cos.h"
 #include "node_sin.h"
