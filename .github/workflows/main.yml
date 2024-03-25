@@ -15,6 +15,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         compiler: [gcc, clang, MSVC]
+        exclude:
+          - os: ubuntu-latest
+            compiler: MSVC
+          - os: windows-latest
+            compiler: gcc
 
     steps:
       - name: Checkout repository
@@ -46,7 +51,7 @@ jobs:
 
       - name: Run tests
         if: matrix.os == 'ubuntu-latest'
-        run: ./build/run_tests
+        run: ./home/runner/work/cascade/cascade/build/run_tests
 
       - name: Run tests
         if: matrix.os == 'windows-latest'
