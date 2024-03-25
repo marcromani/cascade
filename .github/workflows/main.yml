@@ -54,7 +54,7 @@ jobs:
             "-DCMAKE_CXX_COMPILER=`"C:\Program Files\LLVM\bin\clang++.exe`"",
             "-G Ninja",
             "-B build")
-          $args_str = $args -join ' '
+          $args = $args -join ' '
           cmake $args
 
       - name: Configure CMake for Windows + MSVC
