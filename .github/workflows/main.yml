@@ -10,6 +10,7 @@ on:
 
 jobs:
   build_and_test:
+    timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
