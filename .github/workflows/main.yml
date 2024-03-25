@@ -48,8 +48,8 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -G Ninja -B build
 
-      - name: Configure CMake for Windows + MVSC
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'MVSC'
+      - name: Configure CMake for Windows + MSVC
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
         run: cmake -DCMAKE_BUILD_TYPE=Release -B build
 
       - name: Build
