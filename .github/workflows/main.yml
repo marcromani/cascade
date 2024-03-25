@@ -50,8 +50,8 @@ jobs:
           $args = (
             "-DGTEST_LINKED_AS_SHARED_LIBRARY=ON",
             "-DCMAKE_BUILD_TYPE=Release",
-            "-DCMAKE_C_COMPILER='C:\Program Files\LLVM\bin\clang.exe'",
-            "-DCMAKE_CXX_COMPILER='C:\Program Files\LLVM\bin\clang++.exe'",
+            "-DCMAKE_C_COMPILER=`"C:\Program Files\LLVM\bin\clang.exe`"",
+            "-DCMAKE_CXX_COMPILER=`"C:\Program Files\LLVM\bin\clang++.exe`"",
             "-G Ninja",
             "-B build")
           $args_str = $args -join ''
