@@ -47,14 +47,15 @@ jobs:
       - name: Configure CMake for Windows + clang
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: |
-          $cmake_args = (
-            "-DGTEST_LINKED_AS_SHARED_LIBRARY=ON " +
-            "-DCMAKE_BUILD_TYPE=Release " +
-            "-DCMAKE_C_COMPILER='C:\Program Files\LLVM\bin\clang.exe' " +
-            "-DCMAKE_CXX_COMPILER='C:\Program Files\LLVM\bin\clang++.exe' " +
-            "-G Ninja ",
+          $args = (
+            "-DGTEST_LINKED_AS_SHARED_LIBRARY=ON",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER='C:\Program Files\LLVM\bin\clang.exe'",
+            "-DCMAKE_CXX_COMPILER='C:\Program Files\LLVM\bin\clang++.exe'",
+            "-G Ninja",
             "-B build")
-          cmake $cmake_args
+          $args_str = $args -join ''
+          cmake $args
 
       - name: Configure CMake for Windows + MSVC
         if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
