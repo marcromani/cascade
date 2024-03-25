@@ -25,17 +25,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Linux environment
+      - name: Set up Ubuntu environment
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake
-
-      - name: Set up Windows + MSVC environment
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
-        run: |
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-          choco install visualstudio2019-workload-vctools
 
       - name: Set up Windows + Clang environment
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
@@ -43,11 +37,26 @@ jobs:
           choco install llvm
           refreshenv
 
-      - name: Configure CMake
-        run: cmake -DCMAKE_C_COMPILER=${{ matrix.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -B build
+      - name: Set up Windows + MSVC environment
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'MSVC'
+        run: |
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+          choco install visualstudio2019-workload-vctools
+
+      - name: Configure CMake for Ubuntu + gcc
+        if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -B build
+
+      - name: Configure CMake for Ubuntu + clang
+        if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build
+
+      - name: Configure CMake for Windows
+        if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+        run: cmake -DCMAKE_BUILD_TYPE=Release -B build
 
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build
 
       - name: Run tests
         if: matrix.os == 'ubuntu-latest'
