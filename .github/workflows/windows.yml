@@ -41,6 +41,12 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Run tests
+      - name: Run tests for clang build
+        if: matrix.compiler == 'clang'
         run: |
           & ".\build\tests\run_tests.exe"
+
+      - name: Run tests for MSVC build
+        if: matrix.compiler == 'MSVC'
+        run: |
+          & ".\build\tests\Release\run_tests.exe"
