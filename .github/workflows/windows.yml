@@ -44,7 +44,7 @@ jobs:
             "-DCMAKE_CXX_COMPILER=clang++",
             "-G Ninja",
             "-S .",
-            "-B build")
+            "-B build-clang")
           $args = $args -join ' '
           Invoke-Expression "cmake $args"
 
