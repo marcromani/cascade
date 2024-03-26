@@ -10,11 +10,11 @@ set(gtest_force_shared_crt
     ON
     CACHE BOOL "" FORCE)
 
-set(build_gmock
+set(BUILD_GMOCK
     OFF
     CACHE BOOL "" FORCE)
 
-set(install_gtest
+set(INSTALL_GTEST
     OFF
     CACHE BOOL "" FORCE)
 
@@ -30,7 +30,7 @@ enable_testing()
 
 target_include_directories(run_tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(run_tests cascade GTest::gtest_main)
+target_link_libraries(run_tests cascade_static GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(run_tests)

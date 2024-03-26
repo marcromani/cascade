@@ -28,19 +28,27 @@ set(SOURCES
     util.cpp
     var.cpp)
 
+add_library(cascade_static STATIC ${SOURCES})
+set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade)
+target_include_directories(cascade_static
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 if(BUILD_SHARED)
   add_library(cascade SHARED ${SOURCES})
-else()
-  add_library(cascade STATIC ${SOURCES})
+  set_target_properties(cascade PROPERTIES OUTPUT_NAME cascade)
+  target_include_directories(cascade PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 endif()
 
-set_target_properties(cascade PROPERTIES OUTPUT_NAME cascade)
-
-target_include_directories(cascade PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 install(
-  TARGETS cascade
+  TARGETS cascade_static
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
+
+if(TARGET cascade)
+  install(
+    TARGETS cascade
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
+endif()
 
 install(FILES ${HEADERS} DESTINATION include)
