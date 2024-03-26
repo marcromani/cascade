@@ -43,4 +43,5 @@ jobs:
         run: cmake --build build
 
       - name: Run tests
-        run: .\build\tests\run_tests.exe
+        run: |
+          & ".\build\tests\run_tests.exe"
