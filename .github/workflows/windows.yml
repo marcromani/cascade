@@ -14,15 +14,27 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        compiler: [clang, MSVC]
+        compiler: [gcc, clang, MSVC]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install Ninja for clang
-        if: matrix.compiler == 'clang'
+      - name: Install Ninja for gcc and clang
+        if: matrix.compiler == 'gcc' || matrix.compiler == 'clang'
         run: choco install ninja -y
+
+      - name: Configure CMake for gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          $args = (
+            "-DCMAKE_C_COMPILER=gcc",
+            "-DCMAKE_CXX_COMPILER=g++",
+            "-G Ninja",
+            "-S .",
+            "-B build")
+          $args = $args -join ' '
+          Invoke-Expression "cmake $args"
 
       - name: Configure CMake for clang
         if: matrix.compiler == 'clang'
@@ -30,6 +42,7 @@ jobs:
           $args = (
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++",
+            "-G Ninja",
             "-S .",
             "-B build")
           $args = $args -join ' '
@@ -42,8 +55,8 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Run tests for clang build
-        if: matrix.compiler == 'clang'
+      - name: Run tests for gcc and clang builds
+        if: matrix.compiler == 'gcc' || matrix.compiler == 'clang'
         run: |
           & ".\build\tests\run_tests.exe"
 
