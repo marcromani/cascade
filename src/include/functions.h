@@ -7,6 +7,7 @@ namespace cascade
 {
 Var sin(Var);
 Var cos(Var);
+Var tan(Var);
 }  // namespace cascade
 
 #endif

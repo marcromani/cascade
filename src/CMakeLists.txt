@@ -10,6 +10,7 @@ set(HEADERS
     include/node_mul.h
     include/node_sin.h
     include/node_sub.h
+    include/node_tan.h
     include/node_var.h
     include/util.h
     include/var.h)
@@ -24,6 +25,7 @@ set(SOURCES
     node_mul.cpp
     node_sin.cpp
     node_sub.cpp
+    node_tan.cpp
     node_var.cpp
     util.cpp
     var.cpp)

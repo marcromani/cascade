@@ -59,6 +59,7 @@ public:
     // Unary functions
     friend Var sin(Var);
     friend Var cos(Var);
+    friend Var tan(Var);
 
     friend std::ostream &operator<<(std::ostream &, Var &);
 
