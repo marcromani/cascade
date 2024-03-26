@@ -10,12 +10,12 @@ set(gtest_force_shared_crt
     ON
     CACHE BOOL "" FORCE)
 
-set(BUILD_GMOCK
-    ON
+set(build_gmock
+    OFF
     CACHE BOOL "" FORCE)
 
-set(INSTALL_GTEST
-    ON
+set(install_gtest
+    OFF
     CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
