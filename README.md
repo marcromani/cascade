@@ -6,6 +6,7 @@
 
 [![Ubuntu](https://github.com/marcromani/cascade/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/marcromani/cascade/actions/workflows/ubuntu.yml)
 [![Windows](https://github.com/marcromani/cascade/actions/workflows/windows.yml/badge.svg)](https://github.com/marcromani/cascade/actions/workflows/windows.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 **Cascade** is a C++ library for automatic differentiation and error propagation. It provides a streamlined engine that allows you to effortlessly compute gradients of an arbitrary function and also propagate uncertainties in its inputs to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
 
@@ -89,10 +90,6 @@ Covariance involving a functional variable cannot be set
 7.86771
 7.86771
 ```
-
-## License
-
-Cascade is licensed under the [MIT License](LICENSE).
 
 ## Background
 
