@@ -9,12 +9,12 @@
 
 TEST(CovarianceTests, sigmaAndVarianceConsistencyForLeafNodeTest)
 {
-    cascade::Var x = {10, 1.5};
+    cascade::Var x = {10.0, 1.5};
 
     EXPECT_DOUBLE_EQ(x.sigma() * x.sigma(), cascade::Var::covariance(x, x))
         << "The standard deviation is not the square root of the variance";
 
-    EXPECT_EQ(x.setSigma(22), true) << "Sigma setter returns `false` on a functional node";
+    EXPECT_EQ(x.setSigma(22.0), true) << "Sigma setter returns `false` on a functional node";
 
     EXPECT_DOUBLE_EQ(x.sigma() * x.sigma(), cascade::Var::covariance(x, x))
         << "The standard deviation is not the square root of the variance";
@@ -22,13 +22,13 @@ TEST(CovarianceTests, sigmaAndVarianceConsistencyForLeafNodeTest)
 
 TEST(CovarianceTests, sigmaAndVarianceConsistencyForFunctionNodeTest)
 {
-    cascade::Var x = {2, 1.5};
-    cascade::Var y = {-3, 2.5};
-    cascade::Var z = {5, 1.2};
+    cascade::Var x = {2.0, 1.5};
+    cascade::Var y = {-3.0, 2.5};
+    cascade::Var z = {5.0, 1.2};
 
     cascade::Var::setCovariance(x, y, 0.5);
     cascade::Var::setCovariance(x, z, 1.8);
-    cascade::Var::setCovariance(y, z, -1);
+    cascade::Var::setCovariance(y, z, -1.0);
 
     const cascade::Var w = (x + y) * z * x;
 
@@ -38,8 +38,8 @@ TEST(CovarianceTests, sigmaAndVarianceConsistencyForFunctionNodeTest)
 
 TEST(CovarianceTests, sigmaIsFixedForFunctionNodeTest)
 {
-    const cascade::Var x = {1, 3};
-    const cascade::Var y = {2, 0.2};
+    const cascade::Var x = {1.0, 3.0};
+    const cascade::Var y = {2.0, 0.2};
 
     cascade::Var z = x * y;
 
@@ -50,19 +50,19 @@ TEST(CovarianceTests, sigmaIsFixedForFunctionNodeTest)
 
 TEST(CovarianceTests, varianceOfLinearFunctionNodeTest)
 {
-    cascade::Var x = 2;
-    cascade::Var y = -1;
+    cascade::Var x = 2.0;
+    cascade::Var y = -1.0;
     cascade::Var z = 0.1;
 
-    x.setSigma(1);
-    y.setSigma(3);
-    z.setSigma(2);
+    x.setSigma(1.0);
+    y.setSigma(3.0);
+    z.setSigma(2.0);
 
     cascade::Var::setCovariance(x, y, 0.1);
-    cascade::Var::setCovariance(x, z, 2);
-    cascade::Var::setCovariance(y, z, 1);
+    cascade::Var::setCovariance(x, z, 2.0);
+    cascade::Var::setCovariance(y, z, 1.0);
 
-    const cascade::Var w = -2 * x + 3 * y + z - 12;
+    const cascade::Var w = -2.0 * x + 3.0 * y + z - 12.0;
 
     const double expectedVariance = 85.8;
 
@@ -71,30 +71,30 @@ TEST(CovarianceTests, varianceOfLinearFunctionNodeTest)
 
 TEST(CovarianceTests, varianceOfNonlinearFunctionNodeTest)
 {
-    cascade::Var x = {2, 1};
-    cascade::Var y = {-1, 2};
-    cascade::Var z = {-2, 3};
+    cascade::Var x = {2.0, 1.0};
+    cascade::Var y = {-1.0, 2.0};
+    cascade::Var z = {-2.0, 3.0};
 
     cascade::Var::setCovariance(x, y, 0.5);
-    cascade::Var::setCovariance(x, z, -1);
+    cascade::Var::setCovariance(x, z, -1.0);
     cascade::Var::setCovariance(y, z, 0.2);
 
     const cascade::Var w = (x * x * y + z) * y;
 
-    const double expectedVariance = 397;
+    const double expectedVariance = 397.0;
 
     EXPECT_DOUBLE_EQ(w.sigma() * w.sigma(), expectedVariance) << "Wrong value after variance propagation";
 }
 
 TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest)
 {
-    cascade::Var x = {-1, 1};
-    cascade::Var y = {3, 0.5};
-    cascade::Var z = {0.5, 2};
+    cascade::Var x = {-1.0, 1.0};
+    cascade::Var y = {3.0, 0.5};
+    cascade::Var z = {0.5, 2.0};
 
-    cascade::Var::setCovariance(x, y, -1);
+    cascade::Var::setCovariance(x, y, -1.0);
     cascade::Var::setCovariance(x, z, 0.5);
-    cascade::Var::setCovariance(y, z, 1);
+    cascade::Var::setCovariance(y, z, 1.0);
 
     const cascade::Var f = (x + z) * cascade::sin(x * y + z) / y;
     const cascade::Var g = (x + z) * x * y;
@@ -117,7 +117,7 @@ TEST(CovarianceTests, covarianceOfNonlinearFunctionNodesTest)
 
     const std::vector<double> gGrad = {gx, gy, gz};
 
-    const std::vector<double> M = {1, -1, 0.5, -1, 0.25, 1, 0.5, 1, 4};
+    const std::vector<double> M = {1.0, -1.0, 0.5, -1.0, 0.25, 1.0, 0.5, 1.0, 4.0};
 
     std::vector<double> expectedCovariance = cascade::multiply(M, fGrad, 3);
     expectedCovariance                     = cascade::multiply(gGrad, expectedCovariance, 1);
