@@ -28,16 +28,16 @@ jobs:
         if: matrix.compiler == 'clang'
         run: |
           $args = (
-            "-DCMAKE_BUILD_TYPE=Release",
             "-G Ninja",
             "-S .",
-            "-B build")
+            "-B build",
+            "--config Release")
           $args = $args -join ' '
           Invoke-Expression "cmake $args"
 
       - name: Configure CMake for MSVC
         if: matrix.compiler == 'MSVC'
-        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+        run: cmake -S . -B build --config Release
 
       - name: Build
         run: cmake --build build
