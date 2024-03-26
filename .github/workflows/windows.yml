@@ -28,7 +28,6 @@ jobs:
         if: matrix.compiler == 'clang'
         run: |
           $args = (
-            "-G Ninja",
             "-S .",
             "-B build")
           $args = $args -join ' '
