@@ -30,17 +30,16 @@ jobs:
           $args = (
             "-G Ninja",
             "-S .",
-            "-B build",
-            "--config Release")
+            "-B build")
           $args = $args -join ' '
           Invoke-Expression "cmake $args"
 
       - name: Configure CMake for MSVC
         if: matrix.compiler == 'MSVC'
-        run: cmake -S . -B build --config Release
+        run: cmake -S . -B build
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --config Release
 
       - name: Run tests
         run: |
