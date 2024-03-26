@@ -10,7 +10,6 @@ on:
 
 jobs:
   build_and_test:
-    timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -48,8 +47,6 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
         run: |
           $args = (
-            "-DGTEST_CREATE_SHARED_LIBRARY=ON",
-            "-DGTEST_LINKED_AS_SHARED_LIBRARY=ON",
             "-DCMAKE_BUILD_TYPE=Release",
             "-DCMAKE_C_COMPILER=`"C:\Program Files\LLVM\bin\clang.exe`"",
             "-DCMAKE_CXX_COMPILER=`"C:\Program Files\LLVM\bin\clang++.exe`"",
