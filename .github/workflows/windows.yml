@@ -30,7 +30,6 @@ jobs:
           $args = (
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++",
-            "-G Ninja",
             "-S .",
             "-B build")
           $args = $args -join ' '
