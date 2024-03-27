@@ -31,14 +31,15 @@ set(SOURCES
     var.cpp)
 
 add_library(cascade_static STATIC ${SOURCES})
-set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade)
+set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(cascade_static
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(BUILD_SHARED)
-  add_library(cascade SHARED ${SOURCES})
-  set_target_properties(cascade PROPERTIES OUTPUT_NAME cascade)
-  target_include_directories(cascade PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  add_library(cascade_shared SHARED ${SOURCES})
+  set_target_properties(cascade_shared PROPERTIES OUTPUT_NAME cascade_shared)
+  target_include_directories(cascade_shared
+                             PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 endif()
 
 install(
@@ -46,9 +47,9 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 
-if(TARGET cascade)
+if(TARGET cascade_shared)
   install(
-    TARGETS cascade
+    TARGETS cascade_shared
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib)
 endif()

@@ -32,7 +32,7 @@ jobs:
             "-DCMAKE_CXX_COMPILER=g++",
             "-G Ninja",
             "-S .",
-            "-B build_gcc")
+            "-B build")
           $args = $args -join ' '
           Invoke-Expression "cmake $args"
 
@@ -44,23 +44,23 @@ jobs:
             "-DCMAKE_CXX_COMPILER=clang++",
             "-G Ninja",
             "-S .",
-            "-B build_clang")
+            "-B build")
           $args = $args -join ' '
           Invoke-Expression "cmake $args"
 
       - name: Configure CMake for MSVC
         if: matrix.compiler == 'MSVC'
-        run: cmake -S . -B build_MSVC
+        run: cmake -S . -B build
 
       - name: Build
-        run: cmake --build build_${{ matrix.compiler }} --config Release
+        run: cmake --build build --config Release
 
       - name: Run tests for gcc and clang builds
         if: matrix.compiler == 'gcc' || matrix.compiler == 'clang'
         run: |
-          & ".\build_${{ matrix.compiler }}\tests\run_tests.exe"
+          & ".\build\tests\run_tests.exe"
 
       - name: Run tests for MSVC build
         if: matrix.compiler == 'MSVC'
         run: |
-          & ".\build_MSVC\tests\Release\run_tests.exe"
+          & ".\build\tests\Release\run_tests.exe"
