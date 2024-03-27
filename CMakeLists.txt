@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 option(BUILD_SHARED "Build as shared library" ON)
 
 if(MSVC)
-  add_compile_options(/w /WX)
+  add_compile_options(/Wall)
 else()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_options(-Wall -Wextra -Wpedantic)
