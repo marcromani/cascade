@@ -8,7 +8,7 @@
 [![Windows](https://github.com/marcromani/cascade/actions/workflows/windows.yml/badge.svg)](https://github.com/marcromani/cascade/actions/workflows/windows.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-**Cascade** is a C++ library for automatic differentiation and error propagation. It provides a streamlined engine that allows you to effortlessly compute gradients of an arbitrary function and also propagate uncertainties in its inputs to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
+**Cascade** is a lightweight C++ library for automatic differentiation and error propagation. It provides a streamlined engine to compute gradients of arbitrary functions and propagate uncertainties in the inputs to the outputs. The library simplifies the implementation of gradient-based optimization algorithms and the error analysis in scientific computing and engineering applications.
 
 ## How to build
 
@@ -32,7 +32,7 @@ cmake --build . --target install
 If you want to install the library in a custom directory set the install path first:
 
 ```
-cmake -DCMAKE_INSTALL_PREFIX=/install/path ..
+cmake -DCMAKE_INSTALL_PREFIX=/your/install/path ..
 cmake --build . --target install
 ```
 
@@ -93,19 +93,25 @@ Covariance involving a functional variable cannot be set
 
 ## Background
 
+### Automatic differentiation
+
 Cascade uses reverse mode automatic differentiation, most commonly known as backpropagation, to compute exact derivatives of arbitrary piecewise differentiable functions. The key concept behind this technique is compositionality. Each function defines an acyclic computational graph where its nodes store the intermediate values of the operations that make up the result, and each edge stores the derivative of a parent node with respect to a child node. One can then efficiently apply the chain rule on the function by sorting the graph nodes in a topological order and allowing the derivatives to flow backwards, from the output to the inputs. For example, the graph of $x^2 \sin{y} + e^{x/z}$ has the form:
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/marcromani/cascade/main/media/graph.png" alt="Function graph"/>
+    <picture>
+        <source media="(prefers-color-scheme: light)" srcset="./media/graph_light.png">
+        <img alt="Function graph" src="./media/graph_dark.png">
+    </picture>
 </div>
-
 
 Here each node is given a name and is already indexed following a topological order. The partial derivative of the function with respect to $x$ corresponds to adding all the paths from the output node to the $x$ node, where the value of each path is the product of the values of its edges:
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/marcromani/cascade/main/media/derivative_graph.png" alt="Function derivative graph"/>
+    <picture>
+        <source media="(prefers-color-scheme: light)" srcset="./media/derivative_graph_light.png">
+        <img alt="Function derivative graph" src="./media/derivative_graph_dark.png">
+    </picture>
 </div>
-
 
 Formally,
 
@@ -119,7 +125,9 @@ Formally,
 \end{align*}
 ```
 
-Now, suppose you have a set of $n$ distinct variables that you observe over time, each of which comes with some error. If you can further estimate the size of these errors and the size of the correlations between the variables, you can model the source of your observations as a random vector $\boldsymbol{X} = (X_1, \ldots, X_n)$ with expected value
+### Error propagation
+
+If you have a set of $n$ distinct variables with values $\mu_1, \ldots, \mu_n$, which come with some errors that you can estimate, $\sigma_1, \ldots, \sigma_n$, together with the size of the correlations between the variables, $\sigma_{ij}$, you can model your data as a sample of a random vector $\boldsymbol{X} = (X_1, \ldots, X_n)$ with expected value
 
 ```math
 \text{E}\left[\boldsymbol{X}\right] = (\text{E}\left[X_1\right], \ldots, \text{E}\left[X_n\right]) = (\mu_1, \ldots, \mu_n) = \boldsymbol{\mu}
