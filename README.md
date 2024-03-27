@@ -8,7 +8,7 @@
 [![Windows](https://github.com/marcromani/cascade/actions/workflows/windows.yml/badge.svg)](https://github.com/marcromani/cascade/actions/workflows/windows.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-**Cascade** is a C++ library for automatic differentiation and error propagation. It provides a streamlined engine that allows you to effortlessly compute gradients of an arbitrary function and also propagate uncertainties in its inputs to the output. The library simplifies the process of error analysis in scientific computing and engineering applications.
+**Cascade** is a lightweight C++ library for automatic differentiation and error propagation. It provides a streamlined engine to compute gradients of arbitrary functions and propagate uncertainties in the inputs to the outputs. The library simplifies the implementation of gradient-based optimization algorithms and the error analysis in scientific computing and engineering applications.
 
 ## How to build
 
@@ -32,7 +32,7 @@ cmake --build . --target install
 If you want to install the library in a custom directory set the install path first:
 
 ```
-cmake -DCMAKE_INSTALL_PREFIX=/install/path ..
+cmake -DCMAKE_INSTALL_PREFIX=/your/install/path ..
 cmake --build . --target install
 ```
 
