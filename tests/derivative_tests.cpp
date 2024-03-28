@@ -1,4 +1,5 @@
 #include "functions.h"
+#include "tolerance.h"
 #include "var.h"
 
 #include <cmath>
@@ -92,5 +93,37 @@ TEST(DerivativeTests, derivativeOfTan)
     y.backprop();
 
     EXPECT_DOUBLE_EQ(x.derivative(), 1.0 / std::pow(std::cos(x.value()), 2))
+        << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAsin)
+{
+    const cascade::Var x = 0.55;
+
+    const cascade::Var y = cascade::asin(x);
+    y.backprop();
+
+    // Wolfram Alpha: N[ReplaceAll[D[ArcSin[x], x], {x -> 0.55}], 16]
+    EXPECT_DOUBLE_EQ(x.derivative(), 1.197368680178499) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAcos)
+{
+    const cascade::Var x = -0.78;
+
+    const cascade::Var y = cascade::acos(x);
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), -1.598006930251483) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAtan)
+{
+    const cascade::Var x = 187.2;
+
+    const cascade::Var y = cascade::atan(x);
+    y.backprop();
+
+    EXPECT_NEAR(x.derivative(), 0.00002853487132485125, tolerance)
         << "Derivative has wrong value after backpropagation";
 }
