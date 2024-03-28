@@ -1,8 +1,8 @@
 #include "functions.h"
 
-#include "node_cos.h"
-#include "node_sin.h"
-#include "node_tan.h"
+#include "functions/node_cos.h"
+#include "functions/node_sin.h"
+#include "functions/node_tan.h"
 #include "var.h"
 
 #include <cmath>

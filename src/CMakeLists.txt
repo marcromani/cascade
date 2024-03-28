@@ -3,14 +3,14 @@ cmake_minimum_required(VERSION 3.16)
 set(HEADERS
     # cmake-format: sort
     include/functions.h
+    include/functions/node_cos.h
+    include/functions/node_sin.h
+    include/functions/node_tan.h
     include/node.h
     include/node_add.h
-    include/node_cos.h
     include/node_div.h
     include/node_mul.h
-    include/node_sin.h
     include/node_sub.h
-    include/node_tan.h
     include/node_var.h
     include/util.h
     include/var.h)

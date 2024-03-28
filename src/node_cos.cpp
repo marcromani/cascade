@@ -1,4 +1,4 @@
-#include "node_cos.h"
+#include "functions/node_cos.h"
 
 #include <cmath>
 
