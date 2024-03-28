@@ -8,6 +8,7 @@ void NodeAtan::backprop_()
 {
     std::shared_ptr<Node> x = children_.at(0);
 
-    x->setDerivative(x->derivative() + (1.0 / std::tan(std::atan(x->value()))) * derivative_);
+    const double cos = std::cos(std::atan(x->value()));
+    x->setDerivative(x->derivative() + cos * cos * derivative_);
 }
 }  // namespace cascade
