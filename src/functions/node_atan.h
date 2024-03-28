@@ -1,11 +1,11 @@
-#ifndef CASCADE_NODE_DIV_H
-#define CASCADE_NODE_DIV_H
+#ifndef CASCADE_NODE_ATAN_H
+#define CASCADE_NODE_ATAN_H
 
-#include "node.h"
+#include "../node.h"
 
 namespace cascade
 {
-class NodeDiv final : public Node
+class NodeAtan final : public Node
 {
 public:
     using Node::Node;

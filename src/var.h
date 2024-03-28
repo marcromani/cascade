@@ -61,6 +61,10 @@ public:
     friend Var cos(Var);
     friend Var tan(Var);
 
+    friend Var asin(Var);
+    friend Var acos(Var);
+    friend Var atan(Var);
+
     friend std::ostream &operator<<(std::ostream &, Var &);
 
 private:

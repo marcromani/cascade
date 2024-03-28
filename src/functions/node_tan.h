@@ -1,11 +1,11 @@
-#ifndef CASCADE_NODE_MUL_H
-#define CASCADE_NODE_MUL_H
+#ifndef CASCADE_NODE_TAN_H
+#define CASCADE_NODE_TAN_H
 
-#include "node.h"
+#include "../node.h"
 
 namespace cascade
 {
-class NodeMul final : public Node
+class NodeTan final : public Node
 {
 public:
     using Node::Node;

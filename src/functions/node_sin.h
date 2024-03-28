@@ -1,7 +1,7 @@
-#ifndef CASCADE_NODE_SIN
-#define CASCADE_NODE_SIN
+#ifndef CASCADE_NODE_SIN_H
+#define CASCADE_NODE_SIN_H
 
-#include "node.h"
+#include "../node.h"
 
 namespace cascade
 {

@@ -1,9 +1,9 @@
 #include "var.h"
 
-#include "node_add.h"
-#include "node_div.h"
-#include "node_mul.h"
-#include "node_sub.h"
+#include "functions/node_add.h"
+#include "functions/node_div.h"
+#include "functions/node_mul.h"
+#include "functions/node_sub.h"
 #include "node_var.h"
 #include "util.h"
 

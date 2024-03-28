@@ -1,6 +1,6 @@
 #!/bin/bash
 
-clang-format -i src/*.cpp src/include/*.h
+clang-format -i src/*.cpp src/*.h src/functions/*.cpp src/functions/*.h
 clang-format -i tests/*.cpp tests/include/*.h
 
 cmake-format -c=.cmake-format CMakeLists.txt -o CMakeLists.txt

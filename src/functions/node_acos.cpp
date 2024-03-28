@@ -1,10 +1,10 @@
-#include "functions/node_sin.h"
+#include "node_acos.h"
 
 #include <cmath>
 
 namespace cascade
 {
-void NodeSin::backprop_()
+void NodeAcos::backprop_()
 {
     std::shared_ptr<Node> x = children_.at(0);
 

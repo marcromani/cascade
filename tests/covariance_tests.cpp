@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "functions/functions.h"
 #include "tolerance.h"
 #include "util.h"
 #include "var.h"

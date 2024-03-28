@@ -1,4 +1,4 @@
-#include "functions/node_tan.h"
+#include "node_tan.h"
 
 #include <cmath>
 

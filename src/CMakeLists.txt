@@ -2,30 +2,36 @@ cmake_minimum_required(VERSION 3.16)
 
 set(HEADERS
     # cmake-format: sort
-    include/functions.h
-    include/functions/node_cos.h
-    include/functions/node_sin.h
-    include/functions/node_tan.h
-    include/node.h
-    include/node_add.h
-    include/node_div.h
-    include/node_mul.h
-    include/node_sub.h
-    include/node_var.h
-    include/util.h
-    include/var.h)
+    functions/functions.h
+    functions/node_acos.h
+    functions/node_add.h
+    functions/node_asin.h
+    functions/node_atan.h
+    functions/node_cos.h
+    functions/node_div.h
+    functions/node_mul.h
+    functions/node_sin.h
+    functions/node_sub.h
+    functions/node_tan.h
+    node.h
+    node_var.h
+    util.h
+    var.h)
 
 set(SOURCES
     # cmake-format: sort
-    functions.cpp
+    functions/functions.cpp
+    functions/node_acos.cpp
+    functions/node_add.cpp
+    functions/node_asin.cpp
+    functions/node_atan.cpp
+    functions/node_cos.cpp
+    functions/node_div.cpp
+    functions/node_mul.cpp
+    functions/node_sin.cpp
+    functions/node_sub.cpp
+    functions/node_tan.cpp
     node.cpp
-    node_add.cpp
-    node_cos.cpp
-    node_div.cpp
-    node_mul.cpp
-    node_sin.cpp
-    node_sub.cpp
-    node_tan.cpp
     node_var.cpp
     util.cpp
     var.cpp)
@@ -33,7 +39,7 @@ set(SOURCES
 add_library(cascade_static STATIC ${SOURCES})
 set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(cascade_static
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/functions)
 
 if(BUILD_SHARED)
   add_library(cascade_shared SHARED ${SOURCES})

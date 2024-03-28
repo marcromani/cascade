@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "functions/functions.h"
 #include "var.h"
 
 #include <cmath>

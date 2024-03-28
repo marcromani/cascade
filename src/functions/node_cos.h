@@ -1,11 +1,11 @@
-#ifndef CASCADE_NODE_TAN
-#define CASCADE_NODE_TAN
+#ifndef CASCADE_NODE_COS_H
+#define CASCADE_NODE_COS_H
 
-#include "node.h"
+#include "../node.h"
 
 namespace cascade
 {
-class NodeTan final : public Node
+class NodeCos final : public Node
 {
 public:
     using Node::Node;
