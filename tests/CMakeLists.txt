@@ -30,8 +30,11 @@ enable_testing()
 
 target_include_directories(run_tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CODE_COVERAGE)
-  target_link_libraries(run_tests cascade_static GTest::gtest_main -lgcov)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
+   AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+   AND CODE_COVERAGE)
+  target_link_libraries(run_tests cascade_static GTest::gtest_main -lgcov
+                        --coverage)
 else()
   target_link_libraries(run_tests cascade_static GTest::gtest_main)
 endif()

@@ -21,7 +21,9 @@ set(SOURCES
     util.cpp
     var.cpp)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CODE_COVERAGE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
+   AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+   AND CODE_COVERAGE)
   add_compile_options(-fprofile-arcs -ftest-coverage)
 endif()
 
