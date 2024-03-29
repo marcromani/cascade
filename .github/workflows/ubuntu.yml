@@ -40,4 +40,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: marcromani/cascade
-          exclude: tests
+          exclude: ./build/tests
