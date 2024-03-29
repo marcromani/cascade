@@ -34,10 +34,13 @@ jobs:
       - name: Run tests
         run: ./build/tests/run_tests
 
-      - name: Upload coverage to Codecov
+      - name: Generate coverage report
+        if: matrix.os == 'ubuntu-22.04' && matrix.compiler == 'gcc'
+        run: gcov -o build/src/CMakeFiles/cascade_static.dir/**/*.o
+
+      - name: Upload coverage report to Codecov
         if: matrix.os == 'ubuntu-22.04' && matrix.compiler == 'gcc'
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: marcromani/cascade
-          exclude: ./build/tests tests
