@@ -43,3 +43,4 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          file: build/src/CMakeFiles/cascade_static.dir/**/*.gcov
