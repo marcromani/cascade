@@ -21,6 +21,10 @@ set(SOURCES
     util.cpp
     var.cpp)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CODE_COVERAGE)
+  add_compile_options(-fprofile-arcs -ftest-coverage)
+endif()
+
 add_library(cascade_static STATIC ${SOURCES})
 set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(
