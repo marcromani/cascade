@@ -33,3 +33,10 @@ jobs:
 
       - name: Run tests
         run: ./build/tests/run_tests
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-22.04' && matrix.compiler == 'gcc'
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: marcromani/cascade
