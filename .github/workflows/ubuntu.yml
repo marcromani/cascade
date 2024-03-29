@@ -42,6 +42,6 @@ jobs:
         if: matrix.os == 'ubuntu-22.04' && matrix.compiler == 'gcc'
         uses: codecov/codecov-action@v4.0.1
         with:
-          gcov: false
+          directory: build/src/CMakeFiles/cascade_static.dir
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: marcromani/cascade
