@@ -56,7 +56,18 @@ public:
     friend Var operator*(Var, Var);
     friend Var operator/(Var, Var);
 
-    // Unary functions
+    friend Var pow(Var, Var);
+
+    friend Var sqrt(Var);
+
+    friend Var exp(Var);
+    friend Var exp2(Var);
+    friend Var exp10(Var);
+
+    friend Var log(Var);
+    friend Var log2(Var);
+    friend Var log10(Var);
+
     friend Var sin(Var);
     friend Var cos(Var);
     friend Var tan(Var);

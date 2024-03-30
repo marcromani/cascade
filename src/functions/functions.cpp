@@ -9,8 +9,16 @@
 #include "node_atanh.h"
 #include "node_cos.h"
 #include "node_cosh.h"
+#include "node_exp.h"
+#include "node_exp10.h"
+#include "node_exp2.h"
+#include "node_log.h"
+#include "node_log10.h"
+#include "node_log2.h"
+#include "node_pow.h"
 #include "node_sin.h"
 #include "node_sinh.h"
+#include "node_sqrt.h"
 #include "node_tan.h"
 #include "node_tanh.h"
 
@@ -18,6 +26,94 @@
 
 namespace cascade
 {
+Var pow(Var x, Var y)
+{
+    Var result = std::pow(x.value(), y.value());
+
+    result.node_ = std::make_shared<NodePow>(result.value());
+
+    Var::createEdges_({x, y}, result);
+
+    return result;
+}
+
+Var sqrt(Var x)
+{
+    Var result = std::sqrt(x.value());
+
+    result.node_ = std::make_shared<NodeSqrt>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var exp(Var x)
+{
+    Var result = std::exp(x.value());
+
+    result.node_ = std::make_shared<NodeExp>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var exp2(Var x)
+{
+    Var result = std::exp2(x.value());
+
+    result.node_ = std::make_shared<NodeExp2>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var exp10(Var x)
+{
+    Var result = std::pow(10.0, x.value());
+
+    result.node_ = std::make_shared<NodeExp10>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var log(Var x)
+{
+    Var result = std::log(x.value());
+
+    result.node_ = std::make_shared<NodeLog>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var log2(Var x)
+{
+    Var result = std::log2(x.value());
+
+    result.node_ = std::make_shared<NodeLog2>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var log10(Var x)
+{
+    Var result = std::log10(x.value());
+
+    result.node_ = std::make_shared<NodeLog10>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
 Var sin(Var x)
 {
     Var result = std::sin(x.value());

@@ -5,6 +5,18 @@
 
 namespace cascade
 {
+Var pow(Var, Var);
+
+Var sqrt(Var);
+
+Var exp(Var);
+Var exp2(Var);
+Var exp10(Var);
+
+Var log(Var);
+Var log2(Var);
+Var log10(Var);
+
 Var sin(Var);
 Var cos(Var);
 Var tan(Var);
