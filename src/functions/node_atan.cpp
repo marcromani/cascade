@@ -1,7 +1,5 @@
 #include "node_atan.h"
 
-#include <cmath>
-
 namespace cascade
 {
 void NodeAtan::backprop_()
