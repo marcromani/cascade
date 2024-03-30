@@ -1,5 +1,4 @@
 #include "functions.h"
-#include "tolerance.h"
 #include "var.h"
 
 #include <cmath>
@@ -124,8 +123,7 @@ TEST(DerivativeTests, derivativeOfAtan)
     const cascade::Var y = cascade::atan(x);
     y.backprop();
 
-    EXPECT_NEAR(x.derivative(), 0.00002853487132485125, tolerance)
-        << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.00002853487132485125) << "Derivative has wrong value after backpropagation";
 }
 
 TEST(DerivativeTests, derivativeOfSinh)
@@ -187,5 +185,5 @@ TEST(DerivativeTests, derivativeOfAtanh)
     const cascade::Var y = cascade::atanh(x);
     y.backprop();
 
-    EXPECT_NEAR(x.derivative(), -0.001821817171537750, tolerance) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(x.derivative(), -0.001821817171537750) << "Derivative has wrong value after backpropagation";
 }
