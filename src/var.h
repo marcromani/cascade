@@ -65,6 +65,14 @@ public:
     friend Var acos(Var);
     friend Var atan(Var);
 
+    friend Var sinh(Var);
+    friend Var cosh(Var);
+    friend Var tanh(Var);
+
+    friend Var asinh(Var);
+    friend Var acosh(Var);
+    friend Var atanh(Var);
+
     friend std::ostream &operator<<(std::ostream &, Var &);
 
 private:

@@ -12,6 +12,14 @@ Var tan(Var);
 Var asin(Var);
 Var acos(Var);
 Var atan(Var);
+
+Var sinh(Var);
+Var cosh(Var);
+Var tanh(Var);
+
+Var asinh(Var);
+Var acosh(Var);
+Var atanh(Var);
 }  // namespace cascade
 
 #endif

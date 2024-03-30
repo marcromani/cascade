@@ -127,3 +127,65 @@ TEST(DerivativeTests, derivativeOfAtan)
     EXPECT_NEAR(x.derivative(), 0.00002853487132485125, tolerance)
         << "Derivative has wrong value after backpropagation";
 }
+
+TEST(DerivativeTests, derivativeOfSinh)
+{
+    const cascade::Var x = 32.1;
+
+    const cascade::Var y = cascade::sinh(x);
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), std::cosh(x.value())) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfCosh)
+{
+    const cascade::Var x = -73.5;
+
+    const cascade::Var y = cascade::cosh(x);
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), std::sinh(x.value())) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfTanh)
+{
+    const cascade::Var x = 1.33;
+
+    const cascade::Var y = cascade::tanh(x);
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 1.0 / std::pow(std::cosh(x.value()), 2))
+        << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAsinh)
+{
+    const cascade::Var x = 3.78;
+
+    const cascade::Var y = cascade::asinh(x);
+    y.backprop();
+
+    // Wolfram Alpha: N[ReplaceAll[D[ArcSinh[x], x], {x -> 3.78}], 16]
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.2557519663917190) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAcosh)
+{
+    const cascade::Var x = 1.82;
+
+    const cascade::Var y = cascade::acosh(x);
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.6576101679733735) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfAtanh)
+{
+    const cascade::Var x = 23.45;
+
+    const cascade::Var y = cascade::atanh(x);
+    y.backprop();
+
+    EXPECT_NEAR(x.derivative(), -0.001821817171537750, tolerance) << "Derivative has wrong value after backpropagation";
+}
