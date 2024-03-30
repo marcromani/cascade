@@ -9,12 +9,6 @@ set(SOURCES # cmake-format: sort
 file(GLOB FUNCTION_SOURCES functions/*.cpp)
 list(APPEND SOURCES ${FUNCTION_SOURCES})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
-   AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
-   AND CODE_COVERAGE)
-  add_compile_options(-fprofile-arcs -ftest-coverage)
-endif()
-
 add_library(cascade_static STATIC ${SOURCES})
 set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(
@@ -27,6 +21,19 @@ if(BUILD_SHARED)
   target_include_directories(
     cascade_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                           ${CMAKE_CURRENT_SOURCE_DIR}/functions)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
+   AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+   AND CODE_COVERAGE)
+  add_library(cascade_with_coverage STATIC ${SOURCES})
+  set_target_properties(cascade_with_coverage PROPERTIES OUTPUT_NAME
+                                                         cascade_with_coverage)
+  target_include_directories(
+    cascade_with_coverage PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                 ${CMAKE_CURRENT_SOURCE_DIR}/functions)
+  target_compile_options(cascade_with_coverage PRIVATE -fprofile-arcs
+                                                       -ftest-coverage)
 endif()
 
 install(
