@@ -1,7 +1,7 @@
 #ifndef CASCADE_FUNCTIONS_H
 #define CASCADE_FUNCTIONS_H
 
-#include "../var.h"
+#include "var.h"
 
 namespace cascade
 {

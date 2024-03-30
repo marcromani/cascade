@@ -4,6 +4,7 @@
 #include "functions/node_div.h"
 #include "functions/node_mul.h"
 #include "functions/node_sub.h"
+#include "node.h"
 #include "node_var.h"
 #include "util.h"
 

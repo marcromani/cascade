@@ -1,14 +1,14 @@
 #ifndef CASCADE_VAR_H
 #define CASCADE_VAR_H
 
-#include "node.h"
-
 #include <memory>
 #include <ostream>
 #include <vector>
 
 namespace cascade
 {
+class Node;
+
 class Var
 {
 public:
