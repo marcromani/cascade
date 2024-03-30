@@ -3,23 +3,11 @@ cmake_minimum_required(VERSION 3.16)
 set(HEADERS # cmake-format: sort
             functions/functions.h util.h var.h)
 
-set(SOURCES
-    # cmake-format: sort
-    functions/functions.cpp
-    functions/node_acos.cpp
-    functions/node_add.cpp
-    functions/node_asin.cpp
-    functions/node_atan.cpp
-    functions/node_cos.cpp
-    functions/node_div.cpp
-    functions/node_mul.cpp
-    functions/node_sin.cpp
-    functions/node_sub.cpp
-    functions/node_tan.cpp
-    node.cpp
-    node_var.cpp
-    util.cpp
-    var.cpp)
+set(SOURCES # cmake-format: sort
+            node.cpp node_var.cpp util.cpp var.cpp)
+
+file(GLOB FUNCTION_SOURCES functions/*.cpp)
+list(APPEND SOURCES ${FUNCTION_SOURCES})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
