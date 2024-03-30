@@ -22,7 +22,7 @@
 Create a `build` folder in the root directory and `cd` it. Build the library and tests executable with:
 
 ```
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
 
@@ -39,7 +39,7 @@ cmake --build . --target install
 If you want to install the library in a custom directory set the install path first:
 
 ```
-cmake -DCMAKE_INSTALL_PREFIX=/your/install/path ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/your/install/path ..
 cmake --build . --target install
 ```
 
@@ -59,11 +59,49 @@ The installation folder has the following structure:
 
 To use Cascade in your project simply include the Cascade header files and link against the library.
 
+*example.cpp*
+
+```cpp
+#include "/your/install/path/include/functions.h"
+#include "/your/install/path/include/var.h"
+
+#include <iostream>
+
+using namespace cascade;
+
+int main()
+{
+    Var x = 2.5;
+    Var y = 1.2;
+    Var z = 3.7;
+
+    Var f = pow(x, 2.0) * sin(y) * exp(x / z);
+
+    // Propagate the derivatives downstream
+    f.backprop();
+
+    std::cout << "Value of f: " << f.value() << std::endl;
+    std::cout << "Gradient of f: (" << x.derivative() << ", " << y.derivative() << ")" << std::endl;
+
+    return 0;
+}
+```
+
+```
+g++ example.cpp -o example -L/your/install/path/lib -lcascade_static
+```
+
+```
+./example 
+Value of f: 11.4487
+Gradient of f: (12.2532, 4.45102)
+```
+
 ## Examples
 
 ### Source
 
-```c++
+```cpp
 #include "functions.h"
 #include "var.h"
 
