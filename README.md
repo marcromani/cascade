@@ -43,6 +43,20 @@ cmake -DCMAKE_INSTALL_PREFIX=/your/install/path ..
 cmake --build . --target install
 ```
 
+The install folder has the following structure:
+
+```
+/your/install/path
+├── bin/
+│   └── run_tests
+├── include/
+│   ├── functions.h
+│   └── var.h
+└── lib/
+    ├── libcascade_shared.so
+    └── libcascade_static.a
+```
+
 To use Cascade in your project simply include the Cascade header files and link against the library.
 
 ## Examples
