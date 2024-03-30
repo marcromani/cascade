@@ -60,6 +60,8 @@ public:
 
     friend Var sqrt(Var);
 
+    friend Var abs(Var);
+
     friend Var exp(Var);
     friend Var exp2(Var);
     friend Var exp10(Var);

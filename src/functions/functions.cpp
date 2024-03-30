@@ -1,6 +1,7 @@
 #include "functions.h"
 
 #include "../var.h"
+#include "node_abs.h"
 #include "node_acos.h"
 #include "node_acosh.h"
 #include "node_asin.h"
@@ -42,6 +43,17 @@ Var sqrt(Var x)
     Var result = std::sqrt(x.value());
 
     result.node_ = std::make_shared<NodeSqrt>(result.value());
+
+    Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var abs(Var x)
+{
+    Var result = std::abs(x.value());
+
+    result.node_ = std::make_shared<NodeAbs>(result.value());
 
     Var::createEdges_({x}, result);
 

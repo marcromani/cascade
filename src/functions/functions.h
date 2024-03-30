@@ -9,6 +9,8 @@ Var pow(Var, Var);
 
 Var sqrt(Var);
 
+Var abs(Var);
+
 Var exp(Var);
 Var exp2(Var);
 Var exp10(Var);
