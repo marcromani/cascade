@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(HEADERS # cmake-format: sort
-            functions/functions.h util.h var.h)
+            functions/functions.h var.h)
 
 set(SOURCES # cmake-format: sort
             node.cpp node_var.cpp util.cpp var.cpp)

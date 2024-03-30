@@ -43,7 +43,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/your/install/path ..
 cmake --build . --target install
 ```
 
-The install folder has the following structure:
+The installation folder has the following structure:
 
 ```
 /your/install/path
