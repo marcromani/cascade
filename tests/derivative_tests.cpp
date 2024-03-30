@@ -72,6 +72,7 @@ TEST(DerivativeTests, derivativeOfPow)
     const cascade::Var z = cascade::pow(x, y);
     z.backprop();
 
+    // Wolfram Alpha: N[ReplaceAll[D[Pow[x, y], x], {x -> 1.3, y -> -3.7}], 16]
     EXPECT_DOUBLE_EQ(x.derivative(), -1.078122148810980) << "Derivative has wrong value after backpropagation";
     EXPECT_DOUBLE_EQ(y.derivative(), 0.09938349782502024) << "Derivative has wrong value after backpropagation";
 }
@@ -184,7 +185,6 @@ TEST(DerivativeTests, derivativeOfAsin)
     const cascade::Var y = cascade::asin(x);
     y.backprop();
 
-    // Wolfram Alpha: N[ReplaceAll[D[ArcSin[x], x], {x -> 0.55}], 16]
     EXPECT_DOUBLE_EQ(x.derivative(), 1.197368680178499) << "Derivative has wrong value after backpropagation";
 }
 
@@ -246,7 +246,6 @@ TEST(DerivativeTests, derivativeOfAsinh)
     const cascade::Var y = cascade::asinh(x);
     y.backprop();
 
-    // Wolfram Alpha: N[ReplaceAll[D[ArcSinh[x], x], {x -> 3.78}], 16]
     EXPECT_DOUBLE_EQ(x.derivative(), 0.2557519663917190) << "Derivative has wrong value after backpropagation";
 }
 
