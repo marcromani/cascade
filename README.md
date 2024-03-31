@@ -56,6 +56,7 @@ The installation folder has the following structure:
 ├── bin/
 │   └── run_tests
 ├── include/
+|   ├── cascade.h
 │   ├── functions.h
 │   └── var.h
 └── lib/
@@ -63,13 +64,12 @@ The installation folder has the following structure:
     └── libcascade_static.a
 ```
 
-To use Cascade in your project simply include the Cascade header files and link against the library:
+To use Cascade in your project simply include the `cascade.h` header file and link against the library:
 
 ```cpp
 // File: example.cpp
 
-#include "/your/install/path/include/functions.h"
-#include "/your/install/path/include/var.h"
+#include "/your/install/path/include/cascade.h"
 
 #include <iostream>
 
