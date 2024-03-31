@@ -53,6 +53,7 @@ public:
     // Math operators
     friend Var operator+(Var, Var);
     friend Var operator-(Var, Var);
+    friend Var operator-(Var);
     friend Var operator*(Var, Var);
     friend Var operator/(Var, Var);
 

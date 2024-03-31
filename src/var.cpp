@@ -3,6 +3,7 @@
 #include "functions/node_add.h"
 #include "functions/node_div.h"
 #include "functions/node_mul.h"
+#include "functions/node_neg.h"
 #include "functions/node_sub.h"
 #include "node.h"
 #include "node_var.h"
@@ -112,6 +113,17 @@ Var operator-(Var x, Var y)
     result.node_ = std::make_shared<NodeSub>(result.value());
 
     Var::createEdges_({x, y}, result);
+
+    return result;
+}
+
+Var operator-(Var x)
+{
+    Var result = -x.value();
+
+    result.node_ = std::make_shared<NodeNeg>(result.value());
+
+    Var::createEdges_({x}, result);
 
     return result;
 }
