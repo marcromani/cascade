@@ -136,6 +136,14 @@ TEST(DerivativeTests, derivativeOfAbs)
     y.backprop();
 
     EXPECT_DOUBLE_EQ(x.derivative(), 1.0) << "Derivative has wrong value after backpropagation";
+
+    x = 0.0;
+
+    y = cascade::abs(x);
+    y.backprop();
+
+    // Check subgradient
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.0) << "Derivative has wrong value after backpropagation";
 }
 
 TEST(DerivativeTests, derivativeOfExp)
