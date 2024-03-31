@@ -28,6 +28,7 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           $args = (
+            "-DCMAKE_BUILD_TYPE=Release",
             "-DCMAKE_C_COMPILER=gcc",
             "-DCMAKE_CXX_COMPILER=g++",
             "-G Ninja",
@@ -40,6 +41,7 @@ jobs:
         if: matrix.compiler == 'clang'
         run: |
           $args = (
+            "-DCMAKE_BUILD_TYPE=Release",
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++",
             "-G Ninja",
@@ -52,7 +54,12 @@ jobs:
         if: matrix.compiler == 'MSVC'
         run: cmake -S . -B build
 
-      - name: Build
+      - name: Build for gcc and clang
+        if: matrix.compiler == 'gcc' || matrix.compiler == 'clang'
+        run: cmake --build build
+
+      - name: Build for MSVC
+        if: matrix.compiler == 'MSVC'
         run: cmake --build build --config Release
 
       - name: Run tests for gcc and clang builds
