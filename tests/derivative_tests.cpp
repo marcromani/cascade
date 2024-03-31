@@ -63,6 +63,16 @@ TEST(DerivativeTests, derivativeOfDifference)
     EXPECT_DOUBLE_EQ(y.derivative(), -1.0) << "Derivative has wrong value after backpropagation";
 }
 
+TEST(DerivativeTests, derivativeOfNegation)
+{
+    const cascade::Var x = -876.3;
+
+    const cascade::Var y = -x;
+    y.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), -1.0) << "Derivative has wrong value after backpropagation";
+}
+
 TEST(DerivativeTests, derivativeOfProduct)
 {
     const cascade::Var x = 37.3;
