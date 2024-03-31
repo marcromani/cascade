@@ -90,7 +90,7 @@ public:
     friend Var min(Var, Var);
     friend Var max(Var, Var);
 
-    friend std::ostream &operator<<(std::ostream &, Var &);
+    friend std::ostream &operator<<(std::ostream &, const Var &);
 
 private:
     static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);

@@ -150,7 +150,7 @@ Var operator/(Var x, Var y)
     return result;
 }
 
-std::ostream &operator<<(std::ostream &os, Var &x)
+std::ostream &operator<<(std::ostream &os, const Var &x)
 {
     os << x.value() << " ± " << x.sigma();
     return os;
