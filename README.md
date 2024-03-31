@@ -48,6 +48,8 @@ The installation folder has the following structure:
 ```
 /your/install/path
 ├── bin/
+|   ├── example_covariances
+|   ├── example_derivatives
 │   └── run_tests
 ├── include/
 |   ├── cascade.h
