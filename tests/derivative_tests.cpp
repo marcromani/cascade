@@ -15,6 +15,30 @@ TEST(DerivativeTests, variablesHaveZeroDerivativesAfterInitialization)
     EXPECT_DOUBLE_EQ(z.derivative(), 0.0) << "Derivative is not zero after variable initialization";
 }
 
+TEST(DerivativeTests, backpropagationResetsDerivatives)
+{
+    const cascade::Var x = 2.0;
+    const cascade::Var y = 1.0;
+
+    const cascade::Var z = cascade::pow(y, 3.0);
+    const cascade::Var w = 5.0 * x;
+
+    const cascade::Var f = z + w;
+    const cascade::Var g = z * w;
+
+    f.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 5.0) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 3.0 * y.value() * y.value()) << "Derivative has wrong value after backpropagation";
+
+    g.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 5.0 * y.value() * y.value() * y.value())
+        << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 15.0 * x.value() * y.value() * y.value())
+        << "Derivative has wrong value after backpropagation";
+}
+
 TEST(DerivativeTests, derivativeOfSum)
 {
     const cascade::Var x = 11.0;

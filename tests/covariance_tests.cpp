@@ -7,6 +7,15 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+TEST(CovarianceTests, variablesHaveZeroSigmaIfNotProvidedAtInitialization)
+{
+    const cascade::Var x;
+    const cascade::Var y = 83.6;
+
+    EXPECT_DOUBLE_EQ(x.sigma(), 0.0) << "Sigma is not zero after variable initialization";
+    EXPECT_DOUBLE_EQ(y.sigma(), 0.0) << "Sigma is not zero after variable initialization";
+}
+
 TEST(CovarianceTests, sigmaAndVarianceConsistencyForLeafNodeTest)
 {
     cascade::Var x = {10.0, 1.5};
