@@ -16,6 +16,8 @@
 #include "node_log.h"
 #include "node_log10.h"
 #include "node_log2.h"
+#include "node_max.h"
+#include "node_min.h"
 #include "node_pow.h"
 #include "node_sin.h"
 #include "node_sinh.h"
@@ -254,6 +256,28 @@ Var atanh(Var x)
     result.node_ = std::make_shared<NodeAtanh>(result.value());
 
     Var::createEdges_({x}, result);
+
+    return result;
+}
+
+Var min(Var x, Var y)
+{
+    Var result = std::min(x.value(), y.value());
+
+    result.node_ = std::make_shared<NodeMin>(result.value());
+
+    Var::createEdges_({x, y}, result);
+
+    return result;
+}
+
+Var max(Var x, Var y)
+{
+    Var result = std::max(x.value(), y.value());
+
+    result.node_ = std::make_shared<NodeMax>(result.value());
+
+    Var::createEdges_({x, y}, result);
 
     return result;
 }

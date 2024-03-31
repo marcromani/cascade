@@ -34,6 +34,9 @@ Var tanh(Var);
 Var asinh(Var);
 Var acosh(Var);
 Var atanh(Var);
+
+Var min(Var, Var);
+Var max(Var, Var);
 }  // namespace cascade
 
 #endif

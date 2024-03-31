@@ -87,6 +87,9 @@ public:
     friend Var acosh(Var);
     friend Var atanh(Var);
 
+    friend Var min(Var, Var);
+    friend Var max(Var, Var);
+
     friend std::ostream &operator<<(std::ostream &, Var &);
 
 private:

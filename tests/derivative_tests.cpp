@@ -319,3 +319,47 @@ TEST(DerivativeTests, derivativeOfAtanh)
 
     EXPECT_DOUBLE_EQ(x.derivative(), -0.001821817171537750) << "Derivative has wrong value after backpropagation";
 }
+
+TEST(DerivativeTests, derivativeOfMin)
+{
+    cascade::Var x = 23.4;
+    cascade::Var y = -12.1;
+
+    cascade::Var z = cascade::min(x, y);
+    z.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.0) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 1.0) << "Derivative has wrong value after backpropagation";
+
+    x = 34.27;
+    y = 34.27;
+
+    z = cascade::min(x, y);
+    z.backprop();
+
+    // Check subgradient
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.5) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 0.5) << "Derivative has wrong value after backpropagation";
+}
+
+TEST(DerivativeTests, derivativeOfMax)
+{
+    cascade::Var x = 11.1;
+    cascade::Var y = 0.55;
+
+    cascade::Var z = cascade::max(x, y);
+    z.backprop();
+
+    EXPECT_DOUBLE_EQ(x.derivative(), 1.0) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 0.0) << "Derivative has wrong value after backpropagation";
+
+    x = 42.8;
+    y = 42.8;
+
+    z = cascade::max(x, y);
+    z.backprop();
+
+    // Check subgradient
+    EXPECT_DOUBLE_EQ(x.derivative(), 0.5) << "Derivative has wrong value after backpropagation";
+    EXPECT_DOUBLE_EQ(y.derivative(), 0.5) << "Derivative has wrong value after backpropagation";
+}
