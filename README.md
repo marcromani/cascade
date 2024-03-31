@@ -86,8 +86,11 @@ int main()
     // Propagate the derivatives downstream
     f.backprop();
 
-    std::cout << "Value of f: " << f.value() << std::endl;
-    std::cout << "Gradient of f: (" << x.derivative() << ", " << y.derivative() << ")" << std::endl;
+    std::cout << "f = " << f.value() << std::endl;
+
+    std::cout << "∂f/∂x = " << x.derivative() << std::endl;
+    std::cout << "∂f/∂y = " << y.derivative() << std::endl;
+    std::cout << "∂f/∂z = " << z.derivative() << std::endl;
 
     return 0;
 }
