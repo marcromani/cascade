@@ -86,11 +86,13 @@ int main()
     // Propagate the derivatives downstream
     f.backprop();
 
-    std::cout << "f = " << f.value() << std::endl;
+    // Recover the partial derivatives from the leaf nodes
+    double fx = x.derivative();
+    double fy = y.derivative();
+    double fz = z.derivative();
 
-    std::cout << "∂f/∂x = " << x.derivative() << std::endl;
-    std::cout << "∂f/∂y = " << y.derivative() << std::endl;
-    std::cout << "∂f/∂z = " << z.derivative() << std::endl;
+    std::cout << "Value of f: " << f.value() << std::endl;
+    std::cout << "Gradient of f: (" << fx << " " << fy << " " << fz << ")" << std::endl;
 
     return 0;
 }
@@ -101,9 +103,9 @@ g++ example.cpp -o example -L/your/install/path/lib -lcascade_static
 ```
 
 ```
-./example 
+./example
 Value of f: 11.4487
-Gradient of f: (12.2532, 4.45102)
+Gradient of f: (12.2532 4.45102 -2.09071)
 ```
 
 ## Examples
