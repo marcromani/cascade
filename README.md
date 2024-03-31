@@ -61,11 +61,11 @@ The installation folder has the following structure:
     └── libcascade_static.a
 ```
 
-To use Cascade in your project simply include the Cascade header files and link against the library.
-
-*example.cpp*
+To use Cascade in your project simply include the Cascade header files and link against the library:
 
 ```cpp
+// File: example.cpp
+
 #include "/your/install/path/include/functions.h"
 #include "/your/install/path/include/var.h"
 
