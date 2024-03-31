@@ -18,7 +18,9 @@
 **Cascade** is a lightweight C++ library for automatic differentiation and error propagation. It provides a streamlined engine to compute gradients of arbitrary functions and propagate uncertainties in the inputs to the outputs. The library simplifies the implementation of gradient-based optimization algorithms and the error analysis in scientific computing and engineering applications.
 
 <p align="center">
-    <img src="./media/code.gif" alt="Code animation">
+    <br>
+    <img src="./media/code.gif" alt="Code animation" width="500">
+    <br>
 </p>
 
 ## How to build
