@@ -69,7 +69,7 @@ To use Cascade in your project simply include the `cascade.h` header file and li
 ```cpp
 // File: example.cpp
 
-#include "/your/install/path/include/cascade.h"
+#include "cascade.h"
 
 #include <iostream>
 
@@ -99,7 +99,7 @@ int main()
 ```
 
 ```
-g++ example.cpp -o example -L/your/install/path/lib -lcascade_static
+g++ example.cpp -o example -I/your/install/path/include -L/your/install/path/lib -lcascade_static
 ```
 
 ```
@@ -113,8 +113,7 @@ Gradient of f: (12.2532 4.45102 -2.09071)
 ### Source
 
 ```cpp
-#include "functions.h"
-#include "var.h"
+#include "cascade.h"
 
 #include <iostream>
 
