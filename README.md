@@ -47,15 +47,15 @@ The installation folder has the following structure:
 
 ```
 /your/install/path
-├── bin/
-|   ├── example_covariances
-|   ├── example_derivatives
+├── bin
+│   ├── example_covariances
+│   ├── example_derivatives
 │   └── run_tests
-├── include/
-|   ├── cascade.h
+├── include
+│   ├── cascade.h
 │   ├── functions.h
 │   └── var.h
-└── lib/
+└── lib
     ├── libcascade_shared.so
     └── libcascade_static.a
 ```
