@@ -22,7 +22,8 @@ jobs:
 
       - name: Configure CMake for gcc
         if: matrix.compiler == 'gcc'
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -B build
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCODE_COVERAGE=ON -B build
 
       - name: Configure CMake for clang
         if: matrix.compiler == 'clang'

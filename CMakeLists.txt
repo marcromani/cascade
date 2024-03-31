@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 option(BUILD_SHARED "Build as shared library" ON)
-option(CODE_COVERAGE "Build with code coverage flags, for GCC" ON)
+option(CODE_COVERAGE "Build with code coverage flags, for GCC" OFF)
 
 if(MSVC)
   add_compile_options(/Wall /WX-)
