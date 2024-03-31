@@ -64,11 +64,13 @@ The installation folder has the following structure:
     └── libcascade_static.a
 ```
 
-To use Cascade in your project simply include the `cascade.h` header file and link against the library:
+To use Cascade in your project simply include the `cascade.h` header file and link against the library.
+
+## Examples
+
+*example_derivatives.cpp*
 
 ```cpp
-// File: example.cpp
-
 #include "cascade.h"
 
 #include <iostream>
@@ -99,65 +101,70 @@ int main()
 ```
 
 ```
-g++ example.cpp -o example -I/your/install/path/include -L/your/install/path/lib -lcascade_static
+g++ example_derivatives.cpp -o example_derivatives -I/your/install/path/include -L/your/install/path/lib -lcascade_static
 ```
 
 ```
-./example
+./example_derivatives
 Value of f: 11.4487
 Gradient of f: (12.2532 4.45102 -2.09071)
 ```
 
-## Examples
-
-### Source
+*example_covariances.cpp*
 
 ```cpp
 #include "cascade.h"
 
 #include <iostream>
 
+using namespace cascade;
+
 int main()
 {
-    cascade::Var x = {2, 1.5};
-    cascade::Var y = {-3, 2.5};
-    cascade::Var z = {5, 1.2};
+    // Create variables by providing their values and standard deviations (default to 0.0)
+    Var x = {2.1, 1.5};
+    Var y = {-3.5, 2.5};
+    Var z = {5.7, 1.4};
 
-    cascade::Var::setCovariance(x, y, 0.5);
-    cascade::Var::setCovariance(x, z, 1.8);
+    // Set the covariances between them (default to 0.0)
+    Var::setCovariance(x, y, 0.5);
+    Var::setCovariance(x, z, 1.8);
+    Var::setCovariance(y, z, -1.0);
 
-    if (!cascade::Var::setCovariance(y, z, -1))
-    {
-        std::cout << "This should not be printed" << std::endl;
-    }
+    // Compute a function of the variables
+    Var f = (x + y) * cos(z) * x;
 
-    cascade::Var w = (x + y) * cascade::cos(z) * x;
+    bool changed = Var::setCovariance(f, x, 1.0);
 
-    if (!cascade::Var::setCovariance(w, x, 1.0))
+    if (!changed)
     {
         std::cout << "Covariance involving a functional variable cannot be set" << std::endl;
     }
 
-    std::cout << cascade::Var::covariance(w, x) << std::endl;
-    std::cout << cascade::Var::covariance(w, y) << std::endl;
-    std::cout << cascade::Var::covariance(w, z) << std::endl;
+    // Computing covariances involving functional variables triggers backpropagation calls
+    std::cout << Var::covariance(f, x) << std::endl;
+    std::cout << Var::covariance(f, y) << std::endl;
+    std::cout << Var::covariance(f, z) << std::endl;
 
-    std::cout << cascade::Var::covariance(w, w) << std::endl;
-    std::cout << w.sigma() * w.sigma() << std::endl;
+    std::cout << Var::covariance(f, f) << std::endl;
+    std::cout << f.sigma() * f.sigma() << std::endl;
 
     return 0;
 }
 ```
 
-### Output
+```
+g++ example_covariances.cpp -o example_covariances -I/your/install/path/include -L/your/install/path/lib -lcascade_static
+```
 
 ```
+./example_covariances
 Covariance involving a functional variable cannot be set
--2.53023
-5.60546
--2.81843
-7.86771
-7.86771
+-0.723107
+12.8668
+-3.87443
+28.4044
+28.4044
 ```
 
 ## Background
