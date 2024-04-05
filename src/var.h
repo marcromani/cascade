@@ -108,8 +108,8 @@ private:
 
     std::shared_ptr<Node> node_;
 
-    std::vector<Var> children_;
-    std::vector<Var> parents_;
+    std::vector<std::shared_ptr<Var>> children_;
+    std::vector<std::weak_ptr<Var>> parents_;
 };
 }  // namespace cascade
 

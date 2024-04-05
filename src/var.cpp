@@ -160,14 +160,14 @@ void Var::createEdges_(const std::initializer_list<Var> &inputNodes, Var &output
 {
     for (const Var &x: inputNodes)
     {
-        outputNode.children_.push_back(x);
+        outputNode.children_.push_back(std::make_shared<Var>(x));
         outputNode.node_->children_.push_back(x.node_);
     }
 
-    for (Var &x: outputNode.children_)
+    for (const std::shared_ptr<Var> &x: outputNode.children_)
     {
-        x.parents_.push_back(outputNode);
-        x.node_->parents_.push_back(outputNode.node_);
+        x->parents_.push_back(std::make_shared<Var>(outputNode));
+        x->node_->parents_.push_back(outputNode.node_);
     }
 }
 
@@ -186,22 +186,22 @@ std::vector<Var> Var::sortedNodes_() const
 
         nodes.push_back(node);
 
-        for (const Var &child: node.children_)
+        for (const std::shared_ptr<Var> &child: node.children_)
         {
-            auto search = numParents.find(child.id());
+            auto search = numParents.find(child->id());
 
             if (search != numParents.end())
             {
-                --numParents[child.id()];
+                --numParents[child->id()];
             }
             else
             {
-                numParents[child.id()] = child.parents_.size() - 1;
+                numParents[child->id()] = child->parents_.size() - 1;
             }
 
-            if (numParents[child.id()] == 0)
+            if (numParents[child->id()] == 0)
             {
-                stack.push(child);
+                stack.push(*child);
             }
         }
     }
@@ -214,9 +214,10 @@ std::vector<Var> Var::inputNodes_() const
     const std::vector<Var> nodes = sortedNodes_();
 
     std::vector<Var> inputNodes;
-    std::copy_if(nodes.begin(), nodes.end(), std::back_inserter(inputNodes), [](const Var &node) {
-        return node.children_.empty();
-    });
+    std::copy_if(nodes.begin(),
+                 nodes.end(),
+                 std::back_inserter(inputNodes),
+                 [](const Var &node) { return node.children_.empty(); });
 
     return inputNodes;
 }
@@ -228,17 +229,17 @@ double Var::covariance_(const Var &x, const Var &y)
 
     // Copy the gradients of the input nodes before backpropagating on the second graph
     std::unordered_map<int, double> xGradientMap;
-    std::for_each(xNodes.begin(), xNodes.end(), [&xGradientMap](const Var &node) {
-        xGradientMap.emplace(node.id(), node.derivative());
-    });
+    std::for_each(xNodes.begin(),
+                  xNodes.end(),
+                  [&xGradientMap](const Var &node) { xGradientMap.emplace(node.id(), node.derivative()); });
 
     y.backprop();
     const std::vector<Var> yNodes = y.inputNodes_();
 
     std::unordered_map<int, double> yGradientMap;
-    std::for_each(yNodes.begin(), yNodes.end(), [&yGradientMap](const Var &node) {
-        yGradientMap.emplace(node.id(), node.derivative());
-    });
+    std::for_each(yNodes.begin(),
+                  yNodes.end(),
+                  [&yGradientMap](const Var &node) { yGradientMap.emplace(node.id(), node.derivative()); });
 
     xNodes.insert(xNodes.end(), yNodes.begin(), yNodes.end());
 
