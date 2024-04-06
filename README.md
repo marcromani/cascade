@@ -10,6 +10,7 @@
     <a href="https://github.com/marcromani/cascade/actions/workflows/ubuntu.yml"><img src="https://github.com/marcromani/cascade/actions/workflows/ubuntu.yml/badge.svg" alt="Ubuntu badge"></a>
     <a href="https://github.com/marcromani/cascade/actions/workflows/windows.yml"><img src="https://github.com/marcromani/cascade/actions/workflows/windows.yml/badge.svg" alt="Windows badge"></a>
     <a href="https://codecov.io/gh/marcromani/cascade"><img src="https://codecov.io/gh/marcromani/cascade/graph/badge.svg?token=ZE5FLI38DS" alt="Code coverage badge"></a>
+    <a href="https://app.codacy.com/gh/marcromani/cascade/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/09d0f7e308af4f789864318b67ab7e93" alt="Code quality badge"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License badge"></a>
 </p>
 
