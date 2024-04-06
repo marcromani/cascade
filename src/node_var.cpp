@@ -49,7 +49,7 @@ double NodeVar::covariance(const std::shared_ptr<NodeVar>& x, const std::shared_
     }
 }
 
-void NodeVar::setCovariance(std::shared_ptr<NodeVar>& x, std::shared_ptr<NodeVar>& y, double value)
+void NodeVar::setCovariance(const std::shared_ptr<NodeVar>& x, const std::shared_ptr<NodeVar>& y, double value)
 {
     if (x->id_ < y->id_)
     {

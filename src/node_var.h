@@ -18,7 +18,7 @@ public:
     double sigma() const;
 
     static double covariance(const std::shared_ptr<NodeVar>&, const std::shared_ptr<NodeVar>&);
-    static void setCovariance(std::shared_ptr<NodeVar>&, std::shared_ptr<NodeVar>&, double);
+    static void setCovariance(const std::shared_ptr<NodeVar>&, const std::shared_ptr<NodeVar>&, double);
 
 private:
     std::unordered_map<int, double> covariance_;

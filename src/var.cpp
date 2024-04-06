@@ -279,9 +279,9 @@ double Var::covariance_(const Var &x, const Var &y)
 
     std::vector<double> matrix;
 
-    for (Var row: nodes)
+    for (const Var &row: nodes)
     {
-        for (Var col: nodes)
+        for (const Var &col: nodes)
         {
             // This doesn't end up being a recursive call chain since `nodes` contains leaf variables
             matrix.push_back(covariance(row, col));
