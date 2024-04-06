@@ -62,7 +62,7 @@ double Var::covariance(const Var &x, const Var &y)
     }
 }
 
-bool Var::setCovariance(Var &x, Var &y, double value)
+bool Var::setCovariance(const Var &x, const Var &y, double value)
 {
     std::shared_ptr<NodeVar> xNode = std::dynamic_pointer_cast<NodeVar>(x.node_);
     std::shared_ptr<NodeVar> yNode = std::dynamic_pointer_cast<NodeVar>(y.node_);

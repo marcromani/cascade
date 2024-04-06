@@ -46,7 +46,7 @@ public:
     bool setSigma(double);
 
     static double covariance(const Var &, const Var &);
-    static bool setCovariance(Var &, Var &, double);
+    static bool setCovariance(const Var &, const Var &, double);
 
     void backprop() const;
 
