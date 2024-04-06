@@ -54,46 +54,46 @@ public:
 
     /* Math operators */
 
-    friend Var operator+(Var, Var);
-    friend Var operator-(Var, Var);
-    friend Var operator-(Var);
-    friend Var operator*(Var, Var);
-    friend Var operator/(Var, Var);
+    friend Var operator+(const Var &, const Var &);
+    friend Var operator-(const Var &, const Var &);
+    friend Var operator-(const Var &);
+    friend Var operator*(const Var &, const Var &);
+    friend Var operator/(const Var &, const Var &);
 
     /* Math functions */
 
-    friend Var pow(Var, Var);
+    friend Var pow(const Var &, const Var &);
 
-    friend Var sqrt(Var);
+    friend Var sqrt(const Var &);
 
-    friend Var abs(Var);
+    friend Var abs(const Var &);
 
-    friend Var exp(Var);
-    friend Var exp2(Var);
-    friend Var exp10(Var);
+    friend Var exp(const Var &);
+    friend Var exp2(const Var &);
+    friend Var exp10(const Var &);
 
-    friend Var log(Var);
-    friend Var log2(Var);
-    friend Var log10(Var);
+    friend Var log(const Var &);
+    friend Var log2(const Var &);
+    friend Var log10(const Var &);
 
-    friend Var sin(Var);
-    friend Var cos(Var);
-    friend Var tan(Var);
+    friend Var sin(const Var &);
+    friend Var cos(const Var &);
+    friend Var tan(const Var &);
 
-    friend Var asin(Var);
-    friend Var acos(Var);
-    friend Var atan(Var);
+    friend Var asin(const Var &);
+    friend Var acos(const Var &);
+    friend Var atan(const Var &);
 
-    friend Var sinh(Var);
-    friend Var cosh(Var);
-    friend Var tanh(Var);
+    friend Var sinh(const Var &);
+    friend Var cosh(const Var &);
+    friend Var tanh(const Var &);
 
-    friend Var asinh(Var);
-    friend Var acosh(Var);
-    friend Var atanh(Var);
+    friend Var asinh(const Var &);
+    friend Var acosh(const Var &);
+    friend Var atanh(const Var &);
 
-    friend Var min(Var, Var);
-    friend Var max(Var, Var);
+    friend Var min(const Var &, const Var &);
+    friend Var max(const Var &, const Var &);
 
 private:
     static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);

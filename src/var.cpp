@@ -95,7 +95,7 @@ void Var::backprop() const
     }
 }
 
-Var operator+(Var x, Var y)
+Var operator+(const Var &x, const Var &y)
 {
     Var result = x.value() + y.value();
 
@@ -106,7 +106,7 @@ Var operator+(Var x, Var y)
     return result;
 }
 
-Var operator-(Var x, Var y)
+Var operator-(const Var &x, const Var &y)
 {
     Var result = x.value() - y.value();
 
@@ -117,7 +117,7 @@ Var operator-(Var x, Var y)
     return result;
 }
 
-Var operator-(Var x)
+Var operator-(const Var &x)
 {
     Var result = -x.value();
 
@@ -128,7 +128,7 @@ Var operator-(Var x)
     return result;
 }
 
-Var operator*(Var x, Var y)
+Var operator*(const Var &x, const Var &y)
 {
     Var result = x.value() * y.value();
 
@@ -139,7 +139,7 @@ Var operator*(Var x, Var y)
     return result;
 }
 
-Var operator/(Var x, Var y)
+Var operator/(const Var &x, const Var &y)
 {
     Var result = x.value() / y.value();
 

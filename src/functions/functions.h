@@ -5,38 +5,38 @@
 
 namespace cascade
 {
-Var pow(Var, Var);
+Var pow(const Var&, const Var&);
 
-Var sqrt(Var);
+Var sqrt(const Var&);
 
-Var abs(Var);
+Var abs(const Var&);
 
-Var exp(Var);
-Var exp2(Var);
-Var exp10(Var);
+Var exp(const Var&);
+Var exp2(const Var&);
+Var exp10(const Var&);
 
-Var log(Var);
-Var log2(Var);
-Var log10(Var);
+Var log(const Var&);
+Var log2(const Var&);
+Var log10(const Var&);
 
-Var sin(Var);
-Var cos(Var);
-Var tan(Var);
+Var sin(const Var&);
+Var cos(const Var&);
+Var tan(const Var&);
 
-Var asin(Var);
-Var acos(Var);
-Var atan(Var);
+Var asin(const Var&);
+Var acos(const Var&);
+Var atan(const Var&);
 
-Var sinh(Var);
-Var cosh(Var);
-Var tanh(Var);
+Var sinh(const Var&);
+Var cosh(const Var&);
+Var tanh(const Var&);
 
-Var asinh(Var);
-Var acosh(Var);
-Var atanh(Var);
+Var asinh(const Var&);
+Var acosh(const Var&);
+Var atanh(const Var&);
 
-Var min(Var, Var);
-Var max(Var, Var);
+Var min(const Var&, const Var&);
+Var max(const Var&, const Var&);
 }  // namespace cascade
 
 #endif

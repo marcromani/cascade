@@ -29,7 +29,7 @@
 
 namespace cascade
 {
-Var pow(Var x, Var y)
+Var pow(const Var& x, const Var& y)
 {
     Var result = std::pow(x.value(), y.value());
 
@@ -40,7 +40,7 @@ Var pow(Var x, Var y)
     return result;
 }
 
-Var sqrt(Var x)
+Var sqrt(const Var& x)
 {
     Var result = std::sqrt(x.value());
 
@@ -51,7 +51,7 @@ Var sqrt(Var x)
     return result;
 }
 
-Var abs(Var x)
+Var abs(const Var& x)
 {
     Var result = std::abs(x.value());
 
@@ -62,7 +62,7 @@ Var abs(Var x)
     return result;
 }
 
-Var exp(Var x)
+Var exp(const Var& x)
 {
     Var result = std::exp(x.value());
 
@@ -73,7 +73,7 @@ Var exp(Var x)
     return result;
 }
 
-Var exp2(Var x)
+Var exp2(const Var& x)
 {
     Var result = std::exp2(x.value());
 
@@ -84,7 +84,7 @@ Var exp2(Var x)
     return result;
 }
 
-Var exp10(Var x)
+Var exp10(const Var& x)
 {
     Var result = std::pow(10.0, x.value());
 
@@ -95,7 +95,7 @@ Var exp10(Var x)
     return result;
 }
 
-Var log(Var x)
+Var log(const Var& x)
 {
     Var result = std::log(x.value());
 
@@ -106,7 +106,7 @@ Var log(Var x)
     return result;
 }
 
-Var log2(Var x)
+Var log2(const Var& x)
 {
     Var result = std::log2(x.value());
 
@@ -117,7 +117,7 @@ Var log2(Var x)
     return result;
 }
 
-Var log10(Var x)
+Var log10(const Var& x)
 {
     Var result = std::log10(x.value());
 
@@ -128,7 +128,7 @@ Var log10(Var x)
     return result;
 }
 
-Var sin(Var x)
+Var sin(const Var& x)
 {
     Var result = std::sin(x.value());
 
@@ -139,7 +139,7 @@ Var sin(Var x)
     return result;
 }
 
-Var cos(Var x)
+Var cos(const Var& x)
 {
     Var result = std::cos(x.value());
 
@@ -150,7 +150,7 @@ Var cos(Var x)
     return result;
 }
 
-Var tan(Var x)
+Var tan(const Var& x)
 {
     Var result = std::tan(x.value());
 
@@ -161,7 +161,7 @@ Var tan(Var x)
     return result;
 }
 
-Var asin(Var x)
+Var asin(const Var& x)
 {
     Var result = std::asin(x.value());
 
@@ -172,7 +172,7 @@ Var asin(Var x)
     return result;
 }
 
-Var acos(Var x)
+Var acos(const Var& x)
 {
     Var result = std::acos(x.value());
 
@@ -183,7 +183,7 @@ Var acos(Var x)
     return result;
 }
 
-Var atan(Var x)
+Var atan(const Var& x)
 {
     Var result = std::atan(x.value());
 
@@ -194,7 +194,7 @@ Var atan(Var x)
     return result;
 }
 
-Var sinh(Var x)
+Var sinh(const Var& x)
 {
     Var result = std::sinh(x.value());
 
@@ -205,7 +205,7 @@ Var sinh(Var x)
     return result;
 }
 
-Var cosh(Var x)
+Var cosh(const Var& x)
 {
     Var result = std::cosh(x.value());
 
@@ -216,7 +216,7 @@ Var cosh(Var x)
     return result;
 }
 
-Var tanh(Var x)
+Var tanh(const Var& x)
 {
     Var result = std::tanh(x.value());
 
@@ -227,7 +227,7 @@ Var tanh(Var x)
     return result;
 }
 
-Var asinh(Var x)
+Var asinh(const Var& x)
 {
     Var result = std::asinh(x.value());
 
@@ -238,7 +238,7 @@ Var asinh(Var x)
     return result;
 }
 
-Var acosh(Var x)
+Var acosh(const Var& x)
 {
     Var result = std::acosh(x.value());
 
@@ -249,7 +249,7 @@ Var acosh(Var x)
     return result;
 }
 
-Var atanh(Var x)
+Var atanh(const Var& x)
 {
     Var result = std::atanh(x.value());
 
@@ -260,7 +260,7 @@ Var atanh(Var x)
     return result;
 }
 
-Var min(Var x, Var y)
+Var min(const Var& x, const Var& y)
 {
     Var result = std::min(x.value(), y.value());
 
@@ -271,7 +271,7 @@ Var min(Var x, Var y)
     return result;
 }
 
-Var max(Var x, Var y)
+Var max(const Var& x, const Var& y)
 {
     Var result = std::max(x.value(), y.value());
 
