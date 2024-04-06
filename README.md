@@ -50,6 +50,7 @@ The installation folder has the following structure:
 ├── bin
 │   ├── example_covariances
 │   ├── example_derivatives
+│   ├── example_optimization
 │   └── run_tests
 ├── include
 │   ├── cascade.h

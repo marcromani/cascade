@@ -50,12 +50,17 @@ public:
 
     void backprop() const;
 
-    // Math operators
+    friend std::ostream &operator<<(std::ostream &, const Var &);
+
+    /* Math operators */
+
     friend Var operator+(Var, Var);
     friend Var operator-(Var, Var);
     friend Var operator-(Var);
     friend Var operator*(Var, Var);
     friend Var operator/(Var, Var);
+
+    /* Math functions */
 
     friend Var pow(Var, Var);
 
@@ -89,8 +94,6 @@ public:
 
     friend Var min(Var, Var);
     friend Var max(Var, Var);
-
-    friend std::ostream &operator<<(std::ostream &, const Var &);
 
 private:
     static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
