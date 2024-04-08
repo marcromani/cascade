@@ -107,8 +107,7 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 void Tensor::allocateMemory(size_t size)
 {
 #ifdef CUDA_ENABLED
-    // cudaMallocManaged(static_cast<void **>(reinterpret_cast<void *>(&data_)), size * sizeof(float));
-    cudaMallocManaged(&data_), size * sizeof(float));
+    cudaMallocManaged(static_cast<void **>(reinterpret_cast<void *>(&data_)), size * sizeof(float));
 #else
     data_ = new float[size];
 #endif
