@@ -1,6 +1,6 @@
 #include "tensor.h"
 
-#ifdef __CUDACC__
+#ifdef CUDA_ENABLED
 #include <cuda_runtime.h>
 #endif
 
@@ -70,7 +70,7 @@ Tensor Tensor::operator+(const Tensor &other) const
 
     Tensor result(shape_);
 
-#ifdef __CUDACC__
+#ifdef CUDA_ENABLED
     elementwiseSumGPU(result.data_, data_, other.data_, size());
 #else
     elementwiseSumCPU(result.data_, data_, other.data_, size());
@@ -106,8 +106,9 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 
 void Tensor::allocateMemory(size_t size)
 {
-#ifdef __CUDACC__
-    cudaMallocManaged(&data_, size * sizeof(float));
+#ifdef CUDA_ENABLED
+    // cudaMallocManaged(static_cast<void **>(reinterpret_cast<void *>(&data_)), size * sizeof(float));
+    cudaMallocManaged(&data_), size * sizeof(float));
 #else
     data_ = new float[size];
 #endif
@@ -115,7 +116,7 @@ void Tensor::allocateMemory(size_t size)
 
 void Tensor::freeMemory()
 {
-#ifdef __CUDACC__
+#ifdef CUDA_ENABLED
     cudaFree(data_);
 #else
     delete[] data_;
@@ -124,7 +125,7 @@ void Tensor::freeMemory()
 
 void Tensor::setData(const std::vector<float> &data)
 {
-#ifdef __CUDACC__
+#ifdef CUDA_ENABLED
     cudaMemcpy(data_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
 #else
     std::copy(data.begin(), data.end(), data_);

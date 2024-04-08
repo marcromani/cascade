@@ -21,6 +21,7 @@ target_include_directories(
   cascade_static
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
          ${CUDA_INCLUDE_DIRS})
+target_compile_definitions(cascade_static PRIVATE CUDA_ENABLED)
 
 if(BUILD_SHARED)
   add_library(cascade_shared SHARED ${SOURCES})
@@ -29,6 +30,7 @@ if(BUILD_SHARED)
     cascade_shared
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
            ${CUDA_INCLUDE_DIRS})
+  target_compile_definitions(cascade_shared PRIVATE CUDA_ENABLED)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
@@ -41,6 +43,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
     cascade_with_coverage
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
            ${CUDA_INCLUDE_DIRS})
+  target_compile_definitions(cascade_with_coverage PRIVATE CUDA_ENABLED)
   target_compile_options(cascade_with_coverage PRIVATE -fprofile-arcs
                                                        -ftest-coverage)
 endif()
