@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(cascade VERSION 0.1.0)
+project(
+  cascade
+  VERSION 0.1.0
+  LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -12,6 +15,8 @@ if(MSVC)
   add_compile_options(/Wall /WX-)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   add_compile_options(-Wall -Wextra -Wpedantic)
+elseif(CMAKE_CUDA_COMPILER)
+  add_compile_options()
 else()
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
