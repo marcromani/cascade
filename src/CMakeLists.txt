@@ -15,6 +15,10 @@ list(APPEND SOURCES ${CUDA_SOURCES})
 
 find_package(CUDA)
 
+if(CUDA_FOUND)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+endif()
+
 add_library(cascade_static STATIC ${SOURCES})
 set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(
@@ -22,8 +26,7 @@ target_include_directories(
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
          ${CUDA_INCLUDE_DIRS})
 if(CUDA_FOUND)
-  target_compile_definitions(cascade_static
-                             PRIVATE CUDA_ENABLED CMAKE_EXPORT_COMPILE_COMMANDS)
+  target_compile_definitions(cascade_static PRIVATE CUDA_ENABLED)
 endif()
 
 if(BUILD_SHARED)
@@ -34,8 +37,7 @@ if(BUILD_SHARED)
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
            ${CUDA_INCLUDE_DIRS})
   if(CUDA_FOUND)
-    target_compile_definitions(
-      cascade_shared PRIVATE CUDA_ENABLED CMAKE_EXPORT_COMPILE_COMMANDS)
+    target_compile_definitions(cascade_shared PRIVATE CUDA_ENABLED)
   endif()
 endif()
 
@@ -50,8 +52,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
            ${CUDA_INCLUDE_DIRS})
   if(CUDA_FOUND)
-    target_compile_definitions(
-      cascade_with_coverage PRIVATE CUDA_ENABLED CMAKE_EXPORT_COMPILE_COMMANDS)
+    target_compile_definitions(cascade_with_coverage PRIVATE CUDA_ENABLED)
   endif()
   target_compile_options(cascade_with_coverage PRIVATE -fprofile-arcs
                                                        -ftest-coverage)
