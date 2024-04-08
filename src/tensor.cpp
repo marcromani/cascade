@@ -1,13 +1,13 @@
 #include "tensor.h"
 
-#ifdef CUDA_ENABLED
-#include <cuda_runtime.h>
-#endif
-
 #include <algorithm>
 #include <functional>
 #include <numeric>
 #include <stdexcept>
+
+#ifdef CUDA_ENABLED
+#include <cuda_runtime.h>
+#endif
 
 Tensor::Tensor() : data_(nullptr) {}
 
