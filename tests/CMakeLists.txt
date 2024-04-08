@@ -22,7 +22,8 @@ FetchContent_MakeAvailable(googletest)
 
 set(SOURCES
     # cmake-format: sort
-    covariance_tests.cpp derivative_tests.cpp matrix_tests.cpp var_tests.cpp)
+    covariance_tests.cpp derivative_tests.cpp matrix_tests.cpp tensor_tests.cpp
+    var_tests.cpp)
 
 add_executable(run_tests ${SOURCES})
 
