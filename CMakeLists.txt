@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 option(BUILD_SHARED "Build as shared library" ON)
 option(CODE_COVERAGE "Build with code coverage flags, for GCC" OFF)
+option(ENABLE_CUDA "Enable GPU support, if available" ON)
 
 if(MSVC)
   add_compile_options(/Wall /WX-)
