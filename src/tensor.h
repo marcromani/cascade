@@ -16,10 +16,11 @@ public:
     size_t size() const;
     const std::vector<size_t> &shape() const;
 
-    float *data();
-
     float &operator()(const std::vector<size_t> &indices);
     const float &operator()(const std::vector<size_t> &indices) const;
+
+    Tensor toCPU() const;
+    Tensor toGPU() const;
 
     Tensor operator+(const Tensor &other) const;
 

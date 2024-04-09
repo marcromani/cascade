@@ -13,7 +13,7 @@ Tensor::Tensor() : data_(nullptr) {}
 
 Tensor::Tensor(const std::vector<size_t> &shape) : shape_(shape), data_(nullptr)
 {
-    if (size())
+    if (size() > 0)
     {
         allocateMemory(size());
     }
@@ -21,12 +21,12 @@ Tensor::Tensor(const std::vector<size_t> &shape) : shape_(shape), data_(nullptr)
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data) : shape_(shape), data_(nullptr)
 {
-    if (size() != data.size())
+    if (data.size() != size())
     {
         throw std::invalid_argument("Data size does not match tensor shape");
     }
 
-    if (size())
+    if (size() > 0)
     {
         allocateMemory(size());
         setData(data);
@@ -47,10 +47,9 @@ size_t Tensor::size() const
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
-float *Tensor::data() { return data_; }
-
 float &Tensor::operator()(const std::vector<size_t> &indices)
 {
+    // TODO: Can modify device memory from host?
     const size_t idx = index(indices);
     return data_[idx];
 }
@@ -61,9 +60,13 @@ const float &Tensor::operator()(const std::vector<size_t> &indices) const
     return data_[idx];
 }
 
+Tensor Tensor::toCPU() const { return Tensor(); }
+
+Tensor Tensor::toGPU() const { return Tensor(); }
+
 Tensor Tensor::operator+(const Tensor &other) const
 {
-    if (shape_ != other.shape_)
+    if (other.shape_ != shape_)
     {
         throw std::invalid_argument("Tensor shapes must match for elementwise sum");
     }
