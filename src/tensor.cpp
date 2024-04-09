@@ -1,9 +1,11 @@
 #include "tensor.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <numeric>
 #include <stdexcept>
+#include <vector>
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
