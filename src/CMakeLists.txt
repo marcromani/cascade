@@ -13,22 +13,12 @@ set(CUDA_SOURCES # cmake-format: sort
                  tensor.cu)
 list(APPEND SOURCES ${CUDA_SOURCES})
 
-find_package(CUDA)
-
-if(CUDA_FOUND AND ENABLE_CUDA)
-  set(CUDA_ENABLED 1)
-else()
-  set(CUDA_ENABLED 0)
-endif()
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-
 add_library(cascade_static STATIC ${SOURCES})
 set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
 target_include_directories(
   cascade_static
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-         ${CUDA_INCLUDE_DIRS})
+         $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
 target_compile_definitions(cascade_static PRIVATE CUDA_ENABLED=${CUDA_ENABLED})
 
 if(BUILD_SHARED)
@@ -37,7 +27,7 @@ if(BUILD_SHARED)
   target_include_directories(
     cascade_shared
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-           ${CUDA_INCLUDE_DIRS})
+           $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
   target_compile_definitions(cascade_shared
                              PRIVATE CUDA_ENABLED=${CUDA_ENABLED})
 endif()
@@ -51,7 +41,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
   target_include_directories(
     cascade_with_coverage
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-           ${CUDA_INCLUDE_DIRS})
+           $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
   target_compile_definitions(cascade_with_coverage
                              PRIVATE CUDA_ENABLED=${CUDA_ENABLED})
   target_compile_options(cascade_with_coverage PRIVATE -fprofile-arcs
