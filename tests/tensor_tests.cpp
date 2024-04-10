@@ -15,12 +15,9 @@ TEST(TensorTests, sum)
     // Elementwise sum (automatically uses GPU if available)
     Tensor result = x + y;
 
-    // Copy result data back to CPU
-    float *data = result.data();
-
     for (size_t i = 0; i < result.size(); ++i)
     {
-        std::cout << data[i] << " ";
+        std::cout << result({i}) << " ";
     }
     std::cout << std::endl;
 }
