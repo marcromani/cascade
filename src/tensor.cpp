@@ -11,9 +11,9 @@
 #include <cuda_runtime.h>
 #endif
 
-Tensor::Tensor() : data_(nullptr) {}
+Tensor::Tensor(bool cpu) : cpu_(cpu), data_(nullptr) {}
 
-Tensor::Tensor(const std::vector<size_t> &shape) : shape_(shape), data_(nullptr)
+Tensor::Tensor(const std::vector<size_t> &shape, bool cpu) : cpu_(cpu), shape_(shape), data_(nullptr)
 {
     if (size() > 0)
     {
@@ -21,7 +21,10 @@ Tensor::Tensor(const std::vector<size_t> &shape) : shape_(shape), data_(nullptr)
     }
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data) : shape_(shape), data_(nullptr)
+Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool cpu)
+: cpu_(cpu)
+, shape_(shape)
+, data_(nullptr)
 {
     if (data.size() != size())
     {
@@ -49,19 +52,6 @@ size_t Tensor::size() const
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
-float &Tensor::operator()(const std::vector<size_t> &indices)
-{
-    // TODO: Can modify device memory from host?
-    const size_t idx = index(indices);
-    return data_[idx];
-}
-
-const float &Tensor::operator()(const std::vector<size_t> &indices) const
-{
-    const size_t idx = index(indices);
-    return data_[idx];
-}
-
 Tensor Tensor::toCPU() const { return Tensor(); }
 
 Tensor Tensor::toGPU() const { return Tensor(); }
@@ -73,12 +63,13 @@ Tensor Tensor::operator+(const Tensor &other) const
         throw std::invalid_argument("Tensor shapes must match for elementwise sum");
     }
 
+    // TODO: All tensors should be in the GPU or the CPU
     Tensor result(shape_);
 
 #if CUDA_ENABLED
-    elementwiseSumGPU(result.data_, data_, other.data_, size());
+    sumGPU(result.data_, data_, other.data_, size());
 #else
-    elementwiseSumCPU(result.data_, data_, other.data_, size());
+    sumCPU(result.data_, data_, other.data_, size());
 #endif
 
     return result;
@@ -86,6 +77,7 @@ Tensor Tensor::operator+(const Tensor &other) const
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
 {
+    // No need to check if indices is empty as array subscripting requires at least one parameter
     if (indices.size() != shape_.size())
     {
         throw std::invalid_argument("Number of indices must match tensor dimensionality");
@@ -112,7 +104,14 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 void Tensor::allocateMemory(size_t size)
 {
 #if CUDA_ENABLED
-    cudaMallocManaged(static_cast<void **>(reinterpret_cast<void *>(&data_)), size * sizeof(float));
+    if (cpu_)
+    {
+        data_ = new float[size];
+    }
+    else
+    {
+        cudaMalloc(reinterpret_cast<void **>(&data_), size * sizeof(float));
+    }
 #else
     data_ = new float[size];
 #endif
@@ -121,7 +120,14 @@ void Tensor::allocateMemory(size_t size)
 void Tensor::freeMemory()
 {
 #if CUDA_ENABLED
-    cudaFree(data_);
+    if (cpu_)
+    {
+        delete[] data_;
+    }
+    else
+    {
+        cudaFree(data_);
+    }
 #else
     delete[] data_;
 #endif
@@ -130,13 +136,20 @@ void Tensor::freeMemory()
 void Tensor::setData(const std::vector<float> &data)
 {
 #if CUDA_ENABLED
-    cudaMemcpy(data_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+    if (cpu_)
+    {
+        std::copy(data.begin(), data.end(), data_);
+    }
+    else
+    {
+        cudaMemcpy(data_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+    }
 #else
     std::copy(data.begin(), data.end(), data_);
 #endif
 }
 
-void Tensor::elementwiseSumCPU(float *result, const float *a, const float *b, size_t size) const
+void Tensor::sumCPU(float *result, const float *a, const float *b, size_t size) const
 {
     for (size_t i = 0; i < size; ++i)
     {

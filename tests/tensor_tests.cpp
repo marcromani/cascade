@@ -17,7 +17,7 @@ TEST(TensorTests, sum)
 
     for (size_t i = 0; i < result.size(); ++i)
     {
-        std::cout << result({i}) << " ";
+        std::cout << result[i] << " ";
     }
     std::cout << std::endl;
 }
