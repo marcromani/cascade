@@ -96,16 +96,16 @@ public:
     friend Var max(const Var &, const Var &);
 
 private:
-    static void createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode);
+    static void createEdges(const std::initializer_list<Var> &inputNodes, Var &outputNode);
 
     /**
      * @brief Constructs a topologically sorted list of nodes of the implicit graph rooted at the caller instance.
      *
      * @return The sorted nodes.
      */
-    std::vector<Var> sortedNodes_() const;
+    std::vector<Var> sortedNodes() const;
 
-    std::vector<Var> inputNodes_() const;
+    std::vector<Var> inputNodes() const;
 
     static double covariance_(const Var &, const Var &);
 

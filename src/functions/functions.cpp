@@ -35,7 +35,7 @@ Var pow(const Var& x, const Var& y)
 
     result.node_ = std::make_shared<NodePow>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -46,7 +46,7 @@ Var sqrt(const Var& x)
 
     result.node_ = std::make_shared<NodeSqrt>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -57,7 +57,7 @@ Var abs(const Var& x)
 
     result.node_ = std::make_shared<NodeAbs>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -68,7 +68,7 @@ Var exp(const Var& x)
 
     result.node_ = std::make_shared<NodeExp>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -79,7 +79,7 @@ Var exp2(const Var& x)
 
     result.node_ = std::make_shared<NodeExp2>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -90,7 +90,7 @@ Var exp10(const Var& x)
 
     result.node_ = std::make_shared<NodeExp10>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -101,7 +101,7 @@ Var log(const Var& x)
 
     result.node_ = std::make_shared<NodeLog>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -112,7 +112,7 @@ Var log2(const Var& x)
 
     result.node_ = std::make_shared<NodeLog2>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -123,7 +123,7 @@ Var log10(const Var& x)
 
     result.node_ = std::make_shared<NodeLog10>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -134,7 +134,7 @@ Var sin(const Var& x)
 
     result.node_ = std::make_shared<NodeSin>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -145,7 +145,7 @@ Var cos(const Var& x)
 
     result.node_ = std::make_shared<NodeCos>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -156,7 +156,7 @@ Var tan(const Var& x)
 
     result.node_ = std::make_shared<NodeTan>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -167,7 +167,7 @@ Var asin(const Var& x)
 
     result.node_ = std::make_shared<NodeAsin>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -178,7 +178,7 @@ Var acos(const Var& x)
 
     result.node_ = std::make_shared<NodeAcos>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -189,7 +189,7 @@ Var atan(const Var& x)
 
     result.node_ = std::make_shared<NodeAtan>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -200,7 +200,7 @@ Var sinh(const Var& x)
 
     result.node_ = std::make_shared<NodeSinh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -211,7 +211,7 @@ Var cosh(const Var& x)
 
     result.node_ = std::make_shared<NodeCosh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -222,7 +222,7 @@ Var tanh(const Var& x)
 
     result.node_ = std::make_shared<NodeTanh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -233,7 +233,7 @@ Var asinh(const Var& x)
 
     result.node_ = std::make_shared<NodeAsinh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -244,7 +244,7 @@ Var acosh(const Var& x)
 
     result.node_ = std::make_shared<NodeAcosh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -255,7 +255,7 @@ Var atanh(const Var& x)
 
     result.node_ = std::make_shared<NodeAtanh>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -266,7 +266,7 @@ Var min(const Var& x, const Var& y)
 
     result.node_ = std::make_shared<NodeMin>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -277,7 +277,7 @@ Var max(const Var& x, const Var& y)
 
     result.node_ = std::make_shared<NodeMax>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }

@@ -80,7 +80,7 @@ bool Var::setCovariance(const Var &x, const Var &y, double value)
 
 void Var::backprop() const
 {
-    const std::vector<Var> nodes = sortedNodes_();
+    const std::vector<Var> nodes = sortedNodes();
 
     for (const Var &node: nodes)
     {
@@ -101,7 +101,7 @@ Var operator+(const Var &x, const Var &y)
 
     result.node_ = std::make_shared<NodeAdd>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -112,7 +112,7 @@ Var operator-(const Var &x, const Var &y)
 
     result.node_ = std::make_shared<NodeSub>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -123,7 +123,7 @@ Var operator-(const Var &x)
 
     result.node_ = std::make_shared<NodeNeg>(result.value());
 
-    Var::createEdges_({x}, result);
+    Var::createEdges({x}, result);
 
     return result;
 }
@@ -134,7 +134,7 @@ Var operator*(const Var &x, const Var &y)
 
     result.node_ = std::make_shared<NodeMul>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -145,7 +145,7 @@ Var operator/(const Var &x, const Var &y)
 
     result.node_ = std::make_shared<NodeDiv>(result.value());
 
-    Var::createEdges_({x, y}, result);
+    Var::createEdges({x, y}, result);
 
     return result;
 }
@@ -156,7 +156,7 @@ std::ostream &operator<<(std::ostream &os, const Var &x)
     return os;
 }
 
-void Var::createEdges_(const std::initializer_list<Var> &inputNodes, Var &outputNode)
+void Var::createEdges(const std::initializer_list<Var> &inputNodes, Var &outputNode)
 {
     for (const Var &x: inputNodes)
     {
@@ -171,7 +171,7 @@ void Var::createEdges_(const std::initializer_list<Var> &inputNodes, Var &output
     }
 }
 
-std::vector<Var> Var::sortedNodes_() const
+std::vector<Var> Var::sortedNodes() const
 {
     std::vector<Var> nodes;
 
@@ -209,9 +209,9 @@ std::vector<Var> Var::sortedNodes_() const
     return nodes;
 }
 
-std::vector<Var> Var::inputNodes_() const
+std::vector<Var> Var::inputNodes() const
 {
-    const std::vector<Var> nodes = sortedNodes_();
+    const std::vector<Var> nodes = sortedNodes();
 
     std::vector<Var> inputNodes;
     std::copy_if(nodes.begin(),
@@ -225,7 +225,7 @@ std::vector<Var> Var::inputNodes_() const
 double Var::covariance_(const Var &x, const Var &y)
 {
     x.backprop();
-    std::vector<Var> xNodes = x.inputNodes_();
+    std::vector<Var> xNodes = x.inputNodes();
 
     // Copy the gradients of the input nodes before backpropagating on the second graph
     std::unordered_map<int, double> xGradientMap;
@@ -234,7 +234,7 @@ double Var::covariance_(const Var &x, const Var &y)
                   [&xGradientMap](const Var &node) { xGradientMap.emplace(node.id(), node.derivative()); });
 
     y.backprop();
-    const std::vector<Var> yNodes = y.inputNodes_();
+    const std::vector<Var> yNodes = y.inputNodes();
 
     std::unordered_map<int, double> yGradientMap;
     std::for_each(yNodes.begin(),
