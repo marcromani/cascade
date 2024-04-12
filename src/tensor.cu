@@ -1,8 +1,6 @@
 #include "tensor.h"
 
-// TODO: Can we remove the guards?
-#ifdef __CUDACC__
-    #include <cuda_runtime.h>
+#include <cuda_runtime.h>
 
 __global__ void sumKernel(float *result, const float *a, const float *b, size_t size)
 {
@@ -23,5 +21,3 @@ void Tensor::sumGPU(float *result, const float *a, const float *b, size_t size) 
 
     cudaDeviceSynchronize();
 }
-
-#endif
