@@ -2,14 +2,15 @@
 #define CASCADE_TENSOR_H
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #if CUDA_ENABLED
-#include <cuda_runtime.h>
+    #include <cuda_runtime.h>
 
-#define DEFAULT_CPU_VALUE false
+    #define DEFAULT_CPU_VALUE false
 #else
-#define DEFAULT_CPU_VALUE true
+    #define DEFAULT_CPU_VALUE true
 #endif
 
 class Tensor final
@@ -35,7 +36,6 @@ private:
     size_t index(const std::vector<size_t> &indices) const;
 
     void allocateMemory(size_t size);
-    void freeMemory();
 
     void setData(const std::vector<float> &data);
 
@@ -47,8 +47,11 @@ private:
 
     std::vector<size_t> shape_;
 
-    mutable float *data_;
-    float *deviceData_;
+    mutable std::shared_ptr<float[]> data_;
+    std::shared_ptr<float[]> deviceData_;
+
+    std::vector<Tensor> children_;
+    std::vector<Tensor> parents_;
 };
 
 template<typename... Args> const float &Tensor::operator[](Args... indices) const
@@ -59,8 +62,8 @@ template<typename... Args> const float &Tensor::operator[](Args... indices) cons
 #if CUDA_ENABLED
     if (data_ == nullptr)
     {
-        data_ = new float[size()];
-        cudaMemcpy(data_, deviceData_, size() * sizeof(float), cudaMemcpyDeviceToHost);
+        data_ = std::shared_ptr<float[]>(new float[size()]);
+        cudaMemcpy(data_.get(), deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
     }
 #endif
 

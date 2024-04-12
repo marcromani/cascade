@@ -8,7 +8,7 @@
 #include <vector>
 
 #if CUDA_ENABLED
-#include <cuda_runtime.h>
+    #include <cuda_runtime.h>
 #endif
 
 Tensor::Tensor(bool cpu) : cpu_(cpu), data_(nullptr), deviceData_(nullptr) {}
@@ -43,7 +43,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
     }
 }
 
-Tensor::~Tensor() { freeMemory(); }
+Tensor::~Tensor() {}
 
 size_t Tensor::size() const
 {
@@ -57,9 +57,41 @@ size_t Tensor::size() const
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
-Tensor Tensor::toCPU() const { return Tensor(); }
+Tensor Tensor::toCPU() const
+{
+#if CUDA_ENABLED
+    if (cpu_)
+    {
+        return *this;
+    }
+    else
+    {
+        float *tmp = new float[size()];
+        cudaMemcpy(tmp, deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
 
-Tensor Tensor::toGPU() const { return Tensor(); }
+        const std::vector<float> data(tmp, tmp + size());
+        delete[] tmp;
+
+        return Tensor(shape_, data, true);
+    }
+#else
+    return *this;
+#endif
+}
+
+Tensor Tensor::toGPU() const
+{
+    if (!cpu_)
+    {
+        return *this;
+    }
+    else
+    {
+        const std::vector<float> data(data_.get(), data_.get() + size());
+
+        return Tensor(shape_, data, false);
+    }
+}
 
 Tensor Tensor::operator+(const Tensor &other) const
 {
@@ -74,14 +106,14 @@ Tensor Tensor::operator+(const Tensor &other) const
 #if CUDA_ENABLED
     if (cpu_)
     {
-        sumCPU(result.data_, data_, other.data_, size());
+        sumCPU(result.data_.get(), data_.get(), other.data_.get(), size());
     }
     else
     {
-        sumGPU(result.deviceData_, deviceData_, other.deviceData_, size());
+        sumGPU(result.deviceData_.get(), deviceData_.get(), other.deviceData_.get(), size());
     }
 #else
-    sumCPU(result.data_, data_, other.data_, size());
+    sumCPU(result.data_.get(), data_.get(), other.data_.get(), size());
 #endif
 
     return result;
@@ -118,32 +150,18 @@ void Tensor::allocateMemory(size_t size)
 #if CUDA_ENABLED
     if (cpu_)
     {
-        data_ = new float[size];
+        data_ = std::shared_ptr<float[]>(new float[size]);
     }
     else
     {
-        cudaMalloc(reinterpret_cast<void **>(&deviceData_), size * sizeof(float));
-    }
-#else
-    data_ = new float[size];
-#endif
-}
+        float *tmp;
+        cudaMalloc(reinterpret_cast<void **>(&tmp), size * sizeof(float));
 
-void Tensor::freeMemory()
-{
-    // TODO: Simplify if-else
-#if CUDA_ENABLED
-    if (cpu_)
-    {
-        delete[] data_;
-    }
-    else
-    {
-        delete[] data_;
-        cudaFree(deviceData_);
+        auto cudaDeleter = [](float *ptr) { cudaFree(ptr); };
+        deviceData_      = std::shared_ptr<float[]>(tmp, cudaDeleter);
     }
 #else
-    delete[] data_;
+    data_ = std::shared_ptr<float[]>(new float[size]);
 #endif
 }
 
@@ -152,14 +170,14 @@ void Tensor::setData(const std::vector<float> &data)
 #if CUDA_ENABLED
     if (cpu_)
     {
-        std::copy(data.begin(), data.end(), data_);
+        std::copy(data.begin(), data.end(), data_.get());
     }
     else
     {
-        cudaMemcpy(deviceData_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(deviceData_.get(), data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
     }
 #else
-    std::copy(data.begin(), data.end(), data_);
+    std::copy(data.begin(), data.end(), data_.get());
 #endif
 }
 
