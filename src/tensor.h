@@ -19,7 +19,7 @@ namespace cascade
 class Tensor final
 {
 public:
-    Tensor(bool cpu = DEFAULT_CPU_VALUE);
+    explicit Tensor(bool cpu = DEFAULT_CPU_VALUE);
     explicit Tensor(const std::vector<size_t> &shape, bool cpu = DEFAULT_CPU_VALUE);
     explicit Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool cpu = DEFAULT_CPU_VALUE);
 
