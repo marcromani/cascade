@@ -83,6 +83,7 @@ Tensor Tensor::toCPU() const
         float *tmp = new float[size()];
         cudaMemcpy(tmp, deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
 
+        // TODO: Remove this intermediate copy
         const std::vector<float> data(tmp, tmp + size());
         delete[] tmp;
 
@@ -101,6 +102,7 @@ Tensor Tensor::toGPU() const
     }
     else
     {
+        // TODO: Remove this intermediate copy
         const std::vector<float> data(data_.get(), data_.get() + size());
 
         return Tensor(shape_, data, false);
@@ -114,20 +116,22 @@ Tensor Tensor::operator+(const Tensor &other) const
         throw std::invalid_argument("Tensor shapes must match for elementwise sum");
     }
 
-    // TODO: All tensors should be in the GPU or the CPU
-    Tensor result(shape_);
+    const Tensor x = toGPU();
+    const Tensor y = other.toGPU();
+
+    const Tensor result(shape_, false);
 
 #if CUDA_ENABLED
-    if (cpu_)
+    if (result.cpu_)
     {
-        sumCPU(result.data_.get(), data_.get(), other.data_.get(), size());
+        sumCPU(result.data_.get(), x.data_.get(), y.data_.get(), size());
     }
     else
     {
-        sumGPU(result.deviceData_.get(), deviceData_.get(), other.deviceData_.get(), size());
+        sumGPU(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), size());
     }
 #else
-    sumCPU(result.data_.get(), data_.get(), other.data_.get(), size());
+    sumCPU(result.data_.get(), x.data_.get(), y.data_.get(), size());
 #endif
 
     return result;
