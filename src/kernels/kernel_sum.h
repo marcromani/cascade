@@ -3,6 +3,7 @@
 
 #include <cstddef>
 
-void sumKernel(float *result, const float *a, const float *b, size_t size);
+void kernelSumForward(float *result, const float *x, const float *y, size_t size);
+void kernelSumBackward(float *result, const float *x, const float *y, size_t size);
 
 #endif

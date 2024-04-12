@@ -50,14 +50,15 @@ private:
     mutable std::shared_ptr<float[]> data_;
     std::shared_ptr<float[]> deviceData_;
 
+    mutable std::shared_ptr<float[]> grad_;
+    std::shared_ptr<float[]> deviceGrad_;
+
     std::vector<Tensor> children_;
     std::vector<Tensor> parents_;
 
     std::function<void()> forward_;
     std::function<void()> backward_;
 };
-
-void sum(float *result, const float *a, const float *b, size_t size);
 }  // namespace cascade
 
 #include "tensor.tpp"

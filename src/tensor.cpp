@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
@@ -13,9 +14,12 @@
 #include <cuda_runtime.h>
 #endif
 
+void sumForward(float *result, const float *x, const float *y, size_t size);
+void sumBackward(float *result, const float *x, const float *y, size_t size);
+
 namespace cascade
 {
-Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr)
+Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr), grad_(nullptr), deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
     cpu_ = cpu;
@@ -25,7 +29,12 @@ Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr)
 #endif
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool cpu) : shape_(shape), data_(nullptr), deviceData_(nullptr)
+Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
+: shape_(shape)
+, data_(nullptr)
+, deviceData_(nullptr)
+, grad_(nullptr)
+, deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
     cpu_ = cpu;
@@ -44,6 +53,8 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 : shape_(shape)
 , data_(nullptr)
 , deviceData_(nullptr)
+, grad_(nullptr)
+, deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
     cpu_ = cpu;
@@ -87,14 +98,12 @@ Tensor Tensor::toCPU() const
     }
     else
     {
-        float *tmp = new float[size()];
-        cudaMemcpy(tmp, deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
+        Tensor tensor(shape_, true);
 
-        // TODO: Remove this intermediate copy
-        const std::vector<float> data(tmp, tmp + size());
-        delete[] tmp;
+        tensor.allocateMemory(size());
+        cudaMemcpy(tensor.data_.get(), deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
 
-        return Tensor(shape_, data, true);
+        return tensor;
     }
 #else
     return *this;
@@ -107,13 +116,17 @@ Tensor Tensor::toGPU() const
     {
         return *this;
     }
-    else
-    {
-        // TODO: Remove this intermediate copy and also check CUDA_ENABLED to avoid a copy when it is false
-        const std::vector<float> data(data_.get(), data_.get() + size());
 
-        return Tensor(shape_, data, false);
-    }
+#if CUDA_ENABLED
+    Tensor tensor(shape_, false);
+
+    tensor.allocateMemory(size());
+    cudaMemcpy(tensor.deviceData_.get(), data_.get(), size() * sizeof(float), cudaMemcpyHostToDevice);
+
+    return tensor;
+#else
+    return *this;
+#endif
 }
 
 Tensor Tensor::operator+(const Tensor &other) const
@@ -134,15 +147,16 @@ Tensor Tensor::operator+(const Tensor &other) const
 #if CUDA_ENABLED
     if (result.cpu_)
     {
-        result.forward_ = [result, x, y]() { sum(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
+        result.forward_
+            = [result, x, y]() { sumForward(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
     }
     else
     {
         result.forward_ = [result, x, y]()
-        { sumKernel(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), result.size()); };
+        { kernelSumForward(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), result.size()); };
     }
 #else
-    result.forward_ = [result, x, y]() { sum(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
+    result.forward_ = [result, x, y]() { sumForward(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
 #endif
 
     return result;
@@ -209,12 +223,17 @@ void Tensor::setData(const std::vector<float> &data)
     std::copy(data.begin(), data.end(), data_.get());
 #endif
 }
+}  // namespace cascade
 
-void sum(float *result, const float *a, const float *b, size_t size)
+void sumForward(float *result, const float *x, const float *y, size_t size)
 {
     for (size_t i = 0; i < size; ++i)
     {
-        result[i] = a[i] + b[i];
+        result[i] = x[i] + y[i];
     }
 }
-}  // namespace cascade
+
+void sumBackward(float *result, const float *x, const float *y, size_t size)
+{
+    // TODO
+}
