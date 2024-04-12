@@ -1,5 +1,5 @@
-#ifndef CASCADE_TENSOR_TPP
-#define CASCADE_TENSOR_TPP
+#ifndef CASCADE_TENSOR_H_INL
+#define CASCADE_TENSOR_H_INL
 
 #ifndef CASCADE_TENSOR_H
 #error __FILE__ should only be included from tensor.h

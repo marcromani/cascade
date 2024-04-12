@@ -61,6 +61,6 @@ private:
 };
 }  // namespace cascade
 
-#include "tensor.tpp"
+#include "tensor.h.inl"
 
 #endif
