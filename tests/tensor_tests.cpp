@@ -2,20 +2,25 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 TEST(TensorTests, sum)
 {
-    std::vector<float> x_ = {1.0, 2.0, 3.0, 4.0};
-    std::vector<float> y_ = {0.5, 0.5, 0.5, 0.5};
+    constexpr int n = 200000000;
 
-    Tensor x({4}, x_);
-    Tensor y({4}, y_);
+    std::vector<float> x_(n);
+    std::iota(x_.begin(), x_.end(), 0.0);
+
+    const std::vector<float> y_(n, 0.5);
+
+    Tensor x({n}, x_, true);
+    Tensor y({n}, y_, false);
 
     // Elementwise sum (automatically uses GPU if available)
     Tensor result = x + y;
 
-    for (size_t i = 0; i < result.size(); ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
         std::cout << result[i] << " ";
     }
