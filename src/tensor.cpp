@@ -11,9 +11,13 @@
 #include <cuda_runtime.h>
 #endif
 
-Tensor::Tensor(bool cpu) : cpu_(cpu), data_(nullptr) {}
+Tensor::Tensor(bool cpu) : cpu_(cpu), data_(nullptr), deviceData_(nullptr) {}
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool cpu) : cpu_(cpu), shape_(shape), data_(nullptr)
+Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
+: cpu_(cpu)
+, shape_(shape)
+, data_(nullptr)
+, deviceData_(nullptr)
 {
     if (size() > 0)
     {
@@ -25,6 +29,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 : cpu_(cpu)
 , shape_(shape)
 , data_(nullptr)
+, deviceData_(nullptr)
 {
     if (data.size() != size())
     {
@@ -67,7 +72,14 @@ Tensor Tensor::operator+(const Tensor &other) const
     Tensor result(shape_);
 
 #if CUDA_ENABLED
-    sumGPU(result.data_, data_, other.data_, size());
+    if (cpu_)
+    {
+        sumCPU(result.data_, data_, other.data_, size());
+    }
+    else
+    {
+        sumGPU(result.deviceData_, deviceData_, other.deviceData_, size());
+    }
 #else
     sumCPU(result.data_, data_, other.data_, size());
 #endif
@@ -110,7 +122,7 @@ void Tensor::allocateMemory(size_t size)
     }
     else
     {
-        cudaMalloc(reinterpret_cast<void **>(&data_), size * sizeof(float));
+        cudaMalloc(reinterpret_cast<void **>(&deviceData_), size * sizeof(float));
     }
 #else
     data_ = new float[size];
@@ -119,6 +131,7 @@ void Tensor::allocateMemory(size_t size)
 
 void Tensor::freeMemory()
 {
+    // TODO: Simplify if-else
 #if CUDA_ENABLED
     if (cpu_)
     {
@@ -126,7 +139,8 @@ void Tensor::freeMemory()
     }
     else
     {
-        cudaFree(data_);
+        delete[] data_;
+        cudaFree(deviceData_);
     }
 #else
     delete[] data_;
@@ -142,7 +156,7 @@ void Tensor::setData(const std::vector<float> &data)
     }
     else
     {
-        cudaMemcpy(data_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(deviceData_, data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
     }
 #else
     std::copy(data.begin(), data.end(), data_);

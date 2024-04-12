@@ -5,6 +5,8 @@
 #include <vector>
 
 #if CUDA_ENABLED
+#include <cuda_runtime.h>
+
 #define DEFAULT_CPU_VALUE false
 #else
 #define DEFAULT_CPU_VALUE true
@@ -45,14 +47,23 @@ private:
 
     std::vector<size_t> shape_;
 
-    float *data_;
-    float *hostData_;
+    mutable float *data_;
+    float *deviceData_;
 };
 
 template<typename... Args> const float &Tensor::operator[](Args... indices) const
 {
     // TODO: Static assert to check indices are of type size_t
     const size_t idx = index({static_cast<size_t>(indices)...});
+
+#if CUDA_ENABLED
+    if (data_ == nullptr)
+    {
+        data_ = new float[size()];
+        cudaMemcpy(data_, deviceData_, size() * sizeof(float), cudaMemcpyDeviceToHost);
+    }
+#endif
+
     return data_[idx];
 }
 
