@@ -35,7 +35,6 @@ DerivePointerAlignment: 'true'
 FixNamespaceComments: 'true'
 IncludeBlocks: Regroup
 IndentCaseLabels: 'false'
-IndentPPDirectives: BeforeHash
 IndentWidth: '4'
 KeepEmptyLinesAtTheStartOfBlocks: 'false'
 Language: Cpp

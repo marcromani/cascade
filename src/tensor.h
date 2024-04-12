@@ -2,17 +2,20 @@
 #define CASCADE_TENSOR_H
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <vector>
 
 #if CUDA_ENABLED
-    #include <cuda_runtime.h>
+#include <cuda_runtime.h>
 
-    #define DEFAULT_CPU_VALUE false
+#define DEFAULT_CPU_VALUE false
 #else
-    #define DEFAULT_CPU_VALUE true
+#define DEFAULT_CPU_VALUE true
 #endif
 
+namespace cascade
+{
 class Tensor final
 {
 public:
@@ -39,9 +42,6 @@ private:
 
     void setData(const std::vector<float> &data);
 
-    void sumCPU(float *result, const float *a, const float *b, size_t size) const;
-    void sumGPU(float *result, const float *a, const float *b, size_t size) const;
-
 private:
     bool cpu_;
 
@@ -52,22 +52,14 @@ private:
 
     std::vector<Tensor> children_;
     std::vector<Tensor> parents_;
+
+    std::function<void()> forward_;
+    std::function<void()> backward_;
 };
 
-template<typename... Args> const float &Tensor::operator[](Args... indices) const
-{
-    // TODO: Static assert to check indices are of type size_t
-    const size_t idx = index({static_cast<size_t>(indices)...});
+void sum(float *result, const float *a, const float *b, size_t size);
+}  // namespace cascade
 
-#if CUDA_ENABLED
-    if (data_ == nullptr)
-    {
-        data_ = std::shared_ptr<float[]>(new float[size()]);
-        cudaMemcpy(data_.get(), deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
-    }
-#endif
-
-    return data_[idx];
-}
+#include "tensor.tpp"
 
 #endif

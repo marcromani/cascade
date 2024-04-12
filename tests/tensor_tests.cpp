@@ -14,11 +14,11 @@ TEST(TensorTests, sum)
 
     const std::vector<float> y_(n, 0.5);
 
-    Tensor x({n}, x_, true);
-    Tensor y({n}, y_, false);
+    cascade::Tensor x({n}, x_, true);
+    cascade::Tensor y({n}, y_, false);
 
-    // Elementwise sum (automatically uses GPU if available)
-    Tensor result = x + y;
+    // "Lazy" elementwise sum (automatically uses GPU if available)
+    cascade::Tensor result = x + y;
 
     for (size_t i = 0; i < 10; ++i)
     {

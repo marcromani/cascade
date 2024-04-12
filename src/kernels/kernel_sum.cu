@@ -1,8 +1,8 @@
-#include "tensor.h"
+#include "kernel_sum.h"
 
 #include <cuda_runtime.h>
 
-__global__ void sumKernel(float *result, const float *a, const float *b, size_t size)
+__global__ void sumKernel_(float *result, const float *a, const float *b, size_t size)
 {
     const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -12,12 +12,12 @@ __global__ void sumKernel(float *result, const float *a, const float *b, size_t 
     }
 }
 
-void Tensor::sumGPU(float *result, const float *a, const float *b, size_t size) const
+void sumKernel(float *result, const float *a, const float *b, size_t size)
 {
     constexpr size_t blockSize = 256;
     const size_t numBlocks     = (size + blockSize - 1) / blockSize;
 
-    sumKernel<<<numBlocks, blockSize>>>(result, a, b, size);
+    sumKernel_<<<numBlocks, blockSize>>>(result, a, b, size);
 
     cudaDeviceSynchronize();
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(HEADERS # cmake-format: sort
-            cascade.h functions/functions.h tensor.h var.h)
+            cascade.h functions/functions.h tensor.h tensor.tpp var.h)
 
 set(SOURCES # cmake-format: sort
             node.cpp node_var.cpp tensor.cpp util.cpp var.cpp)
@@ -10,7 +10,7 @@ file(GLOB FUNCTION_SOURCES functions/*.cpp)
 list(APPEND SOURCES ${FUNCTION_SOURCES})
 
 set(CUDA_SOURCES # cmake-format: sort
-                 tensor.cu)
+                 kernels/kernel_sum.cu)
 list(APPEND SOURCES ${CUDA_SOURCES})
 
 add_library(cascade_static STATIC ${SOURCES})

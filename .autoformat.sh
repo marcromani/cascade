@@ -1,6 +1,6 @@
 #!/bin/bash
 
-clang-format -i src/*.cpp src/*.h src/*.cu src/functions/*.cpp src/functions/*.h
+clang-format -i src/*.cpp src/*.h src/*.tpp src/functions/*.cpp src/functions/*.h src/kernels/*.cu
 clang-format -i tests/*.cpp tests/include/*.h
 clang-format -i examples/*.cpp
 

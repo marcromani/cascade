@@ -8,14 +8,19 @@
 #include <vector>
 
 #if CUDA_ENABLED
-    #include <cuda_runtime.h>
+#include "kernels/kernel_sum.h"
+
+#include <cuda_runtime.h>
 #endif
 
+namespace cascade
+{
 Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr)
 {
 #if CUDA_ENABLED
     cpu_ = cpu;
 #else
+    [&cpu] {}();  // Silence the unused parameter warning
     cpu_ = true;
 #endif
 }
@@ -25,6 +30,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool cpu) : shape_(shape), data
 #if CUDA_ENABLED
     cpu_ = cpu;
 #else
+    [&cpu] {}();  // Silence the unused parameter warning
     cpu_ = true;
 #endif
 
@@ -42,6 +48,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 #if CUDA_ENABLED
     cpu_ = cpu;
 #else
+    [&cpu] {}();  // Silence the unused parameter warning
     cpu_ = true;
 #endif
 
@@ -102,7 +109,7 @@ Tensor Tensor::toGPU() const
     }
     else
     {
-        // TODO: Remove this intermediate copy
+        // TODO: Remove this intermediate copy and also check CUDA_ENABLED to avoid a copy when it is false
         const std::vector<float> data(data_.get(), data_.get() + size());
 
         return Tensor(shape_, data, false);
@@ -119,19 +126,23 @@ Tensor Tensor::operator+(const Tensor &other) const
     const Tensor x = toGPU();
     const Tensor y = other.toGPU();
 
-    const Tensor result(shape_, false);
+    Tensor result(shape_, false);
+
+    result.children_.push_back(x);
+    result.children_.push_back(y);
 
 #if CUDA_ENABLED
     if (result.cpu_)
     {
-        sumCPU(result.data_.get(), x.data_.get(), y.data_.get(), size());
+        result.forward_ = [result, x, y]() { sum(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
     }
     else
     {
-        sumGPU(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), size());
+        result.forward_ = [result, x, y]()
+        { sumKernel(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), result.size()); };
     }
 #else
-    sumCPU(result.data_.get(), x.data_.get(), y.data_.get(), size());
+    result.forward_ = [result, x, y]() { sum(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
 #endif
 
     return result;
@@ -179,7 +190,7 @@ void Tensor::allocateMemory(size_t size)
         deviceData_      = std::shared_ptr<float[]>(tmp, cudaDeleter);
     }
 #else
-    data_ = std::shared_ptr<float[]>(new float[size]);
+    data_           = std::shared_ptr<float[]>(new float[size]);
 #endif
 }
 
@@ -199,10 +210,11 @@ void Tensor::setData(const std::vector<float> &data)
 #endif
 }
 
-void Tensor::sumCPU(float *result, const float *a, const float *b, size_t size) const
+void sum(float *result, const float *a, const float *b, size_t size)
 {
     for (size_t i = 0; i < size; ++i)
     {
         result[i] = a[i] + b[i];
     }
 }
+}  // namespace cascade
