@@ -11,14 +11,23 @@
     #include <cuda_runtime.h>
 #endif
 
-Tensor::Tensor(bool cpu) : cpu_(cpu), data_(nullptr), deviceData_(nullptr) {}
-
-Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
-: cpu_(cpu)
-, shape_(shape)
-, data_(nullptr)
-, deviceData_(nullptr)
+Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr)
 {
+#if CUDA_ENABLED
+    cpu_ = cpu;
+#else
+    cpu_ = true;
+#endif
+}
+
+Tensor::Tensor(const std::vector<size_t> &shape, bool cpu) : shape_(shape), data_(nullptr), deviceData_(nullptr)
+{
+#if CUDA_ENABLED
+    cpu_ = cpu;
+#else
+    cpu_ = true;
+#endif
+
     if (size() > 0)
     {
         allocateMemory(size());
@@ -26,11 +35,16 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool cpu)
-: cpu_(cpu)
-, shape_(shape)
+: shape_(shape)
 , data_(nullptr)
 , deviceData_(nullptr)
 {
+#if CUDA_ENABLED
+    cpu_ = cpu;
+#else
+    cpu_ = true;
+#endif
+
     if (data.size() != size())
     {
         throw std::invalid_argument("Data size does not match tensor shape");
