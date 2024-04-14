@@ -25,4 +25,6 @@ TEST(TensorTests, sum)
         std::cout << result[i] << " ";
     }
     std::cout << std::endl;
+
+    result.backward_();
 }

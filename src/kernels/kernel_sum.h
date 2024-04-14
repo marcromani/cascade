@@ -4,6 +4,6 @@
 #include <cstddef>
 
 void kernelSumForward(float *result, const float *x, const float *y, size_t size);
-void kernelSumBackward(float *result, const float *x, const float *y, size_t size);
+void kernelSumBackward(float *x, float *y, size_t size, const size_t *shape);
 
 #endif

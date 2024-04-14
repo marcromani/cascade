@@ -38,11 +38,12 @@ public:
 private:
     size_t index(const std::vector<size_t> &indices) const;
 
-    void allocateMemory(size_t size);
+    void allocateDataMemory(size_t size);
+    void allocateGradMemory(size_t size);
 
     void setData(const std::vector<float> &data);
 
-private:
+public:
     bool cpu_;
 
     std::vector<size_t> shape_;

@@ -22,19 +22,50 @@ void kernelSumForward(float *result, const float *x, const float *y, size_t size
     cudaDeviceSynchronize();
 }
 
-__global__ void kernelSumBackward_(float *result, const float *x, const float *y, size_t size)
+__global__ void kernelSumBackward_(float *x, float *y, size_t size, const size_t *shape)
 {
-    // const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    const size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // size_t indices[shape.size()];
+    if (idx < size)
+    {
+        const size_t numDims = shape[0];
 
-    // size_t stride = 1;
+        size_t indices[16];  // To avoid cudaMalloc, use a big enough number of dimensions
 
-    // for (int i = shape.size() - 1; i >= 0; --i)
-    // {
-    //     indices[i] = (idx / stride) % shape[i];
-    //     stride *= shape[i];
-    // }
+        size_t stride = 1;
+
+        for (int i = numDims; i >= 0; --i)
+        {
+            indices[i] = (idx / stride) % shape[i + 1];
+            stride *= shape[i + 1];
+        }
+
+        size_t allEqual = 1;
+
+        for (size_t i = 0; i < numDims / 2; ++i)
+        {
+            allEqual *= indices[i] == indices[2 * i];
+        }
+
+        if (allEqual)
+        {
+            x[idx] = 1.0;
+            y[idx] = 1.0;
+        }
+        else
+        {
+            x[idx] = 0.0;
+            y[idx] = 0.0;
+        }
+    }
 }
 
-void kernelSumBackward(float *result, const float *x, const float *y, size_t size) {}
+void kernelSumBackward(float *x, float *y, size_t size, const size_t *shape)
+{
+    constexpr size_t blockSize = 256;
+    const size_t numBlocks     = (size + blockSize - 1) / blockSize;
+
+    kernelSumBackward_<<<numBlocks, blockSize>>>(x, y, size, shape);
+
+    cudaDeviceSynchronize();
+}
