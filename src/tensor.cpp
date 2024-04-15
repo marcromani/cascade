@@ -19,27 +19,16 @@ void sumBackward(float *result, const float *x, const float *y, size_t size);
 
 namespace cascade
 {
-Tensor::Tensor(bool device) : data_(nullptr), deviceData_(nullptr), grad_(nullptr), deviceGrad_(nullptr)
+Tensor::Tensor(bool device) : device_(device)
 {
-#if CUDA_ENABLED
-    device_ = device;
-#else
-    [&device] {}();  // Silence the unused parameter warning
+#if !CUDA_ENABLED
     device_ = false;
 #endif
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool device)
-: shape_(shape)
-, data_(nullptr)
-, deviceData_(nullptr)
-, grad_(nullptr)
-, deviceGrad_(nullptr)
+Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device), shape_(shape)
 {
-#if CUDA_ENABLED
-    device_ = device;
-#else
-    [&device] {}();  // Silence the unused parameter warning
+#if !CUDA_ENABLED
     device_ = false;
 #endif
 
@@ -61,16 +50,10 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device)
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device)
-: shape_(shape)
-, data_(nullptr)
-, deviceData_(nullptr)
-, grad_(nullptr)
-, deviceGrad_(nullptr)
+: device_(device)
+, shape_(shape)
 {
-#if CUDA_ENABLED
-    device_ = device;
-#else
-    [&device] {}();  // Silence the unused parameter warning
+#if !CUDA_ENABLED
     device_ = false;
 #endif
 
