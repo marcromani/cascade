@@ -19,17 +19,17 @@ void sumBackward(float *result, const float *x, const float *y, size_t size);
 
 namespace cascade
 {
-Tensor::Tensor(bool cpu) : data_(nullptr), deviceData_(nullptr), grad_(nullptr), deviceGrad_(nullptr)
+Tensor::Tensor(bool device) : data_(nullptr), deviceData_(nullptr), grad_(nullptr), deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
-    cpu_ = cpu;
+    device_ = device;
 #else
-    [&cpu] {}();  // Silence the unused parameter warning
-    cpu_ = true;
+    [&device] {}();  // Silence the unused parameter warning
+    device_ = false;
 #endif
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
+Tensor::Tensor(const std::vector<size_t> &shape, bool device)
 : shape_(shape)
 , data_(nullptr)
 , deviceData_(nullptr)
@@ -37,19 +37,30 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool cpu)
 , deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
-    cpu_ = cpu;
+    device_ = device;
 #else
-    [&cpu] {}();  // Silence the unused parameter warning
-    cpu_ = true;
+    [&device] {}();  // Silence the unused parameter warning
+    device_ = false;
 #endif
 
-    if (size() > 0)
+    size_t n = size();
+
+    if (n > 0)
     {
-        allocateDataMemory(size());
+        allocateMemory(data_, n);
+
+        if (device_)
+        {
+            // TODO: Write a kernel to initialize the data
+        }
+        else
+        {
+            std::fill(data_.get(), data_.get() + n, 0.f);
+        }
     }
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool cpu)
+Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device)
 : shape_(shape)
 , data_(nullptr)
 , deviceData_(nullptr)
@@ -57,20 +68,22 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 , deviceGrad_(nullptr)
 {
 #if CUDA_ENABLED
-    cpu_ = cpu;
+    device_ = device;
 #else
-    [&cpu] {}();  // Silence the unused parameter warning
-    cpu_ = true;
+    [&device] {}();  // Silence the unused parameter warning
+    device_ = false;
 #endif
 
-    if (data.size() != size())
+    size_t n = size();
+
+    if (data.size() != n)
     {
-        throw std::invalid_argument("Data size does not match tensor shape");
+        throw std::invalid_argument("Data size is inconsistent with tensor shape");
     }
 
-    if (size() > 0)
+    if (n > 0)
     {
-        allocateDataMemory(size());
+        allocateMemory(data_, n);
         setData(data);
     }
 }
@@ -89,39 +102,43 @@ size_t Tensor::size() const
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
-Tensor Tensor::toCPU() const
+Tensor Tensor::toHost() const
 {
 #if CUDA_ENABLED
-    if (cpu_)
+    if (device_)
     {
-        return *this;
+        Tensor tensor(shape_, false);
+
+        size_t n = size();
+
+        tensor.allocateMemory(tensor.data_, n);
+        cudaMemcpy(tensor.data_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+
+        return tensor;
     }
     else
     {
-        Tensor tensor(shape_, true);
-
-        tensor.allocateDataMemory(size());
-        cudaMemcpy(tensor.data_.get(), deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
-
-        return tensor;
+        return *this;
     }
 #else
     return *this;
 #endif
 }
 
-Tensor Tensor::toGPU() const
+Tensor Tensor::toDevice() const
 {
-    if (!cpu_)
+    if (device_)
     {
         return *this;
     }
 
 #if CUDA_ENABLED
-    Tensor tensor(shape_, false);
+    Tensor tensor(shape_, true);
 
-    tensor.allocateDataMemory(size());
-    cudaMemcpy(tensor.deviceData_.get(), data_.get(), size() * sizeof(float), cudaMemcpyHostToDevice);
+    size_t n = size();
+
+    tensor.allocateMemory(tensor.data_, n);
+    cudaMemcpy(tensor.deviceData_.get(), data_.get(), n * sizeof(float), cudaMemcpyHostToDevice);
 
     return tensor;
 #else
@@ -136,8 +153,8 @@ Tensor Tensor::operator+(const Tensor &other) const
         throw std::invalid_argument("Tensor shapes must match for elementwise sum");
     }
 
-    Tensor x = toGPU();
-    Tensor y = other.toGPU();
+    Tensor x = toDevice();
+    Tensor y = other.toDevice();
 
     // TODO: Reserve x and y grad or deviceGrad (depending on CUDA_ENABLED)
     // of appropriate size, so that kernelSumBackward can fill them with gradients
@@ -185,8 +202,10 @@ Tensor Tensor::operator+(const Tensor &other) const
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
 {
+    size_t n = indices.size();
+
     // No need to check if indices is empty as array subscripting requires at least one parameter
-    if (indices.size() != shape_.size())
+    if (n != shape_.size())
     {
         throw std::invalid_argument("Number of indices must match tensor dimensionality");
     }
@@ -194,7 +213,7 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
     size_t idx    = 0;
     size_t stride = 1;
 
-    for (int i = indices.size() - 1; i >= 0; --i)
+    for (int i = n - 1; i >= 0; --i)
     {
         if (indices[i] >= shape_[i])
         {
@@ -209,56 +228,36 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
     return idx;
 }
 
-void Tensor::allocateDataMemory(size_t size)
+void Tensor::allocateMemory(std::shared_ptr<float[]> &ptr, size_t size)
 {
 #if CUDA_ENABLED
-    if (cpu_)
-    {
-        data_ = std::shared_ptr<float[]>(new float[size]);
-    }
-    else
+    if (device_)
     {
         float *tmp;
         cudaMalloc(reinterpret_cast<void **>(&tmp), size * sizeof(float));
 
-        auto cudaDeleter = [](float *ptr) { cudaFree(ptr); };
-        deviceData_      = std::shared_ptr<float[]>(tmp, cudaDeleter);
-    }
-#else
-    data_           = std::shared_ptr<float[]>(new float[size]);
-#endif
-}
-
-void Tensor::allocateGradMemory(size_t size)
-{
-#if CUDA_ENABLED
-    if (cpu_)
-    {
-        grad_ = std::shared_ptr<float[]>(new float[size]);
+        auto cudaDeleter = [](float *p) { cudaFree(p); };
+        ptr              = std::shared_ptr<float[]>(tmp, cudaDeleter);
     }
     else
     {
-        float *tmp;
-        cudaMalloc(reinterpret_cast<void **>(&tmp), size * sizeof(float));
-
-        auto cudaDeleter = [](float *ptr) { cudaFree(ptr); };
-        deviceGrad_      = std::shared_ptr<float[]>(tmp, cudaDeleter);
+        ptr = std::shared_ptr<float[]>(new float[size]);
     }
 #else
-    grad_           = std::shared_ptr<float[]>(new float[size]);
+    ptr             = std::shared_ptr<float[]>(new float[size]);
 #endif
 }
 
 void Tensor::setData(const std::vector<float> &data)
 {
 #if CUDA_ENABLED
-    if (cpu_)
+    if (device_)
     {
-        std::copy(data.begin(), data.end(), data_.get());
+        cudaMemcpy(deviceData_.get(), data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
     }
     else
     {
-        cudaMemcpy(deviceData_.get(), data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+        std::copy(data.begin(), data.end(), data_.get());
     }
 #else
     std::copy(data.begin(), data.end(), data_.get());

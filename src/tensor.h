@@ -8,10 +8,6 @@
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
-
-#define DEFAULT_CPU_VALUE false
-#else
-#define DEFAULT_CPU_VALUE true
 #endif
 
 namespace cascade
@@ -19,9 +15,9 @@ namespace cascade
 class Tensor final
 {
 public:
-    explicit Tensor(bool cpu = DEFAULT_CPU_VALUE);
-    explicit Tensor(const std::vector<size_t> &shape, bool cpu = DEFAULT_CPU_VALUE);
-    explicit Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool cpu = DEFAULT_CPU_VALUE);
+    explicit Tensor(bool device = false);
+    explicit Tensor(const std::vector<size_t> &shape, bool device = false);
+    explicit Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device = false);
 
     ~Tensor();
 
@@ -30,21 +26,25 @@ public:
 
     template<typename... Args> const float &operator[](Args... indices) const;
 
-    Tensor toCPU() const;
-    Tensor toGPU() const;
+    Tensor toHost() const;
+    Tensor toDevice() const;
 
     Tensor operator+(const Tensor &other) const;
+    Tensor operator-(const Tensor &other) const;
+    Tensor operator*(const Tensor &other) const;
+    Tensor operator/(const Tensor &other) const;
+
+    template<typename... Args> Tensor sum(Args... indices) const;
 
 private:
     size_t index(const std::vector<size_t> &indices) const;
 
-    void allocateDataMemory(size_t size);
-    void allocateGradMemory(size_t size);
+    void allocateMemory(std::shared_ptr<float[]> &ptr, size_t size);
 
     void setData(const std::vector<float> &data);
 
 public:
-    bool cpu_;
+    bool device_;
 
     std::vector<size_t> shape_;
 

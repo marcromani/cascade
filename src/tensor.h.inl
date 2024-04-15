@@ -25,8 +25,10 @@ template<typename... Args> const float &Tensor::operator[](Args... indices) cons
 #if CUDA_ENABLED
     if (data_ == nullptr)
     {
-        data_ = std::shared_ptr<float[]>(new float[size()]);
-        cudaMemcpy(data_.get(), deviceData_.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
+        size_t n = size();
+
+        data_ = std::shared_ptr<float[]>(new float[n]);
+        cudaMemcpy(data_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
     }
 #endif
 
