@@ -34,7 +34,7 @@ __global__ void kernelSumBackward_(float *x, float *y, size_t size, const size_t
 
         size_t stride = 1;
 
-        for (int i = numDims; i >= 0; --i)
+        for (int i = numDims - 1; i >= 0; --i)
         {
             indices[i] = (idx / stride) % shape[i + 1];
             stride *= shape[i + 1];
