@@ -23,16 +23,16 @@ template<typename... Args> const float &Tensor::operator[](Args... indices) cons
     size_t idx = index({static_cast<size_t>(indices)...});
 
 #if CUDA_ENABLED
-    if (data_ == nullptr)
+    if (hostData_ == nullptr)
     {
         size_t n = size();
 
-        data_ = std::shared_ptr<float[]>(new float[n]);
-        cudaMemcpy(data_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+        hostData_ = std::shared_ptr<float[]>(new float[n]);
+        cudaMemcpy(hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
     }
 #endif
 
-    return data_[idx];
+    return hostData_[idx];
 }
 }  // namespace cascade
 

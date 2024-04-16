@@ -14,11 +14,11 @@
 #include <cuda_runtime.h>
 #endif
 
-void sumForward(float *result, const float *x, const float *y, size_t size);
-void sumBackward(float *result, const float *x, const float *y, size_t size);
-
 namespace cascade
 {
+void sumForward(const Tensor &result, const Tensor &x, const Tensor &y);
+void sumBackward(const Tensor &x, const Tensor &y);
+
 Tensor::Tensor(bool device) : device_(device)
 {
 #if !CUDA_ENABLED
@@ -36,7 +36,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device),
 
     if (n > 0)
     {
-        allocateMemory(data_, n);
+        allocateMemory(n, false);
 
         if (device_)
         {
@@ -44,7 +44,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device),
         }
         else
         {
-            std::fill(data_.get(), data_.get() + n, 0.f);
+            std::fill(hostData_.get(), hostData_.get() + n, 0.f);
         }
     }
 }
@@ -66,7 +66,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 
     if (n > 0)
     {
-        allocateMemory(data_, n);
+        allocateMemory(n, false);
         setData(data);
     }
 }
@@ -94,8 +94,8 @@ Tensor Tensor::toHost() const
 
         size_t n = size();
 
-        tensor.allocateMemory(tensor.data_, n);
-        cudaMemcpy(tensor.data_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+        tensor.allocateMemory(n, false);
+        cudaMemcpy(tensor.hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
         return tensor;
     }
@@ -120,8 +120,8 @@ Tensor Tensor::toDevice() const
 
     size_t n = size();
 
-    tensor.allocateMemory(tensor.data_, n);
-    cudaMemcpy(tensor.deviceData_.get(), data_.get(), n * sizeof(float), cudaMemcpyHostToDevice);
+    tensor.allocateMemory(n, false);
+    cudaMemcpy(tensor.deviceData_.get(), hostData_.get(), n * sizeof(float), cudaMemcpyHostToDevice);
 
     return tensor;
 #else
@@ -139,45 +139,31 @@ Tensor Tensor::operator+(const Tensor &other) const
     Tensor x = toDevice();
     Tensor y = other.toDevice();
 
-    // TODO: Reserve x and y grad or deviceGrad (depending on CUDA_ENABLED)
-    // of appropriate size, so that kernelSumBackward can fill them with gradients
+    size_t n = size();
 
-    x.allocateGradMemory(size() * size());
-    y.allocateGradMemory(size() * size());
+    // TODO: Maybe we should do lazy allocation too
+    x.allocateMemory(n * n, true);
+    y.allocateMemory(n * n, true);
 
-    Tensor result(shape_, false);
+    Tensor result(shape_, true);
 
     result.children_.push_back(x);
     result.children_.push_back(y);
 
 #if CUDA_ENABLED
-    if (result.cpu_)
+    if (result.device_)
     {
-        result.forward_
-            = [result, x, y]() { sumForward(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
+        result.forward_  = [result, x, y]() { kernelSumForward(result, x, y); };
+        result.backward_ = [result, x, y]() { kernelSumBackward(x, y); };
     }
     else
     {
-        result.forward_ = [result, x, y]()
-        { kernelSumForward(result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), result.size()); };
-
-        result.backward_ = [result, x, y]()
-        {
-            size_t *shape;
-            cudaMalloc(reinterpret_cast<void **>(&shape), (x.shape().size() + 1) * sizeof(size_t));
-
-            const size_t numDims = x.shape().size();
-            cudaMemcpy(shape, &numDims, sizeof(size_t), cudaMemcpyHostToDevice);
-
-            cudaMemcpy(shape + 1, x.shape().data(), x.shape().size() * sizeof(size_t), cudaMemcpyHostToDevice);
-
-            kernelSumBackward(x.deviceGrad_.get(), y.deviceGrad_.get(), x.size(), shape);
-
-            cudaFree(shape);
-        };
+        result.forward_  = [result, x, y]() { sumForward(result, x, y); };
+        result.backward_ = [result, x, y]() { sumBackward(x, y); };
     }
 #else
-    result.forward_ = [result, x, y]() { sumForward(result.data_.get(), x.data_.get(), y.data_.get(), result.size()); };
+    result.forward_  = [result, x, y]() { sumForward(result, x, y); };
+    result.backward_ = [result, x, y]() { sumBackward(x, y); };
 #endif
 
     return result;
@@ -211,7 +197,7 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
     return idx;
 }
 
-void Tensor::allocateMemory(std::shared_ptr<float[]> &ptr, size_t size)
+void Tensor::allocateMemory(size_t size, bool grad)
 {
 #if CUDA_ENABLED
     if (device_)
@@ -220,14 +206,36 @@ void Tensor::allocateMemory(std::shared_ptr<float[]> &ptr, size_t size)
         cudaMalloc(reinterpret_cast<void **>(&tmp), size * sizeof(float));
 
         auto cudaDeleter = [](float *p) { cudaFree(p); };
-        ptr              = std::shared_ptr<float[]>(tmp, cudaDeleter);
+
+        if (grad)
+        {
+            deviceGrad_ = std::shared_ptr<float[]>(tmp, cudaDeleter);
+        }
+        else
+        {
+            deviceData_ = std::shared_ptr<float[]>(tmp, cudaDeleter);
+        }
     }
     else
     {
-        ptr = std::shared_ptr<float[]>(new float[size]);
+        if (grad)
+        {
+            hostGrad_ = std::shared_ptr<float[]>(new float[size]);
+        }
+        else
+        {
+            hostData_ = std::shared_ptr<float[]>(new float[size]);
+        }
     }
 #else
-    ptr             = std::shared_ptr<float[]>(new float[size]);
+    if (grad)
+    {
+        hostGrad_ = std::shared_ptr<float[]>(new float[size]);
+    }
+    else
+    {
+        hostData_ = std::shared_ptr<float[]>(new float[size]);
+    }
 #endif
 }
 
@@ -240,23 +248,23 @@ void Tensor::setData(const std::vector<float> &data)
     }
     else
     {
-        std::copy(data.begin(), data.end(), data_.get());
+        std::copy(data.begin(), data.end(), hostData_.get());
     }
 #else
-    std::copy(data.begin(), data.end(), data_.get());
+    std::copy(data.begin(), data.end(), hostData_.get());
 #endif
 }
-}  // namespace cascade
 
-void sumForward(float *result, const float *x, const float *y, size_t size)
+void sumForward(const Tensor &result, const Tensor &x, const Tensor &y)
 {
-    for (size_t i = 0; i < size; ++i)
+    for (size_t i = 0; i < result.size(); ++i)
     {
-        result[i] = x[i] + y[i];
+        result.hostData_[i] = x.hostData_[i] + y.hostData_[i];
     }
 }
 
-void sumBackward(float *result, const float *x, const float *y, size_t size)
+void sumBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
 }
+}  // namespace cascade

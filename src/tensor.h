@@ -39,7 +39,7 @@ public:
 private:
     size_t index(const std::vector<size_t> &indices) const;
 
-    void allocateMemory(std::shared_ptr<float[]> &ptr, size_t size);
+    void allocateMemory(size_t size, bool grad);
 
     void setData(const std::vector<float> &data);
 
@@ -48,10 +48,10 @@ public:
 
     std::vector<size_t> shape_;
 
-    mutable std::shared_ptr<float[]> data_;
-    std::shared_ptr<float[]> deviceData_;
+    mutable std::shared_ptr<float[]> hostData_;
+    mutable std::shared_ptr<float[]> hostGrad_;
 
-    mutable std::shared_ptr<float[]> grad_;
+    std::shared_ptr<float[]> deviceData_;
     std::shared_ptr<float[]> deviceGrad_;
 
     std::vector<Tensor> children_;
