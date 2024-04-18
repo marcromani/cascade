@@ -25,7 +25,8 @@ Tensor::Tensor(bool device) : device_(device)
     device_ = false;
 #endif
 
-    ready_ = !device;
+    hostDataNeedsUpdate_   = false;
+    deviceDataNeedsUpdate_ = device_;
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device), shape_(shape)
@@ -34,7 +35,8 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device),
     device_ = false;
 #endif
 
-    ready_ = !device;
+    hostDataNeedsUpdate_   = false;
+    deviceDataNeedsUpdate_ = device_;
 
     size_t n = size();
 
@@ -61,7 +63,8 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
     device_ = false;
 #endif
 
-    ready_ = !device;
+    hostDataNeedsUpdate_   = false;
+    deviceDataNeedsUpdate_ = device_;
 
     size_t n = size();
 

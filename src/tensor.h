@@ -16,6 +16,7 @@ class Tensor final
 {
 public:
     explicit Tensor(bool device = false);
+    explicit Tensor(float value, bool device = false);
     explicit Tensor(const std::vector<size_t> &shape, bool device = false);
     explicit Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device = false);
 
@@ -25,6 +26,7 @@ public:
     const std::vector<size_t> &shape() const;
 
     template<typename... Args> const float &operator[](Args... indices) const;
+    template<typename... Args> float &operator[](Args... indices);
 
     Tensor toHost() const;
     Tensor toDevice() const;
@@ -45,7 +47,9 @@ private:
 
 public:
     bool device_;
-    bool ready_;  // A tensor that is not ready should have its value (re)copied to the device
+
+    bool hostDataNeedsUpdate_;
+    bool deviceDataNeedsUpdate_;
 
     std::vector<size_t> shape_;
 

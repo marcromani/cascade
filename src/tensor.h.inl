@@ -23,12 +23,49 @@ template<typename... Args> const float &Tensor::operator[](Args... indices) cons
     size_t idx = index({static_cast<size_t>(indices)...});
 
 #if CUDA_ENABLED
-    if (hostData_ == nullptr)
+    if (hostDataNeedsUpdate_)
     {
         size_t n = size();
 
-        hostData_ = std::shared_ptr<float[]>(new float[n]);
+        if (hostData_ == nullptr)
+        {
+            hostData_ = std::shared_ptr<float[]>(new float[n]);
+        }
+
         cudaMemcpy(hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+
+        hostDataNeedsUpdate_ = false;
+    }
+#endif
+
+    return hostData_[idx];
+}
+
+template<typename... Args> float &Tensor::operator[](Args... indices)
+{
+    static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
+                  "Indices must be of type size_t or int");
+
+    size_t idx = index({static_cast<size_t>(indices)...});
+
+#if CUDA_ENABLED
+    if (device_)
+    {
+        deviceDataNeedsUpdate_ = true;
+    }
+
+    if (hostDataNeedsUpdate_)
+    {
+        size_t n = size();
+
+        if (hostData_ == nullptr)
+        {
+            hostData_ = std::shared_ptr<float[]>(new float[n]);
+        }
+
+        cudaMemcpy(hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+
+        hostDataNeedsUpdate_ = false;
     }
 #endif
 
