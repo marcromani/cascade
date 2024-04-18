@@ -45,6 +45,7 @@ private:
 
 public:
     bool device_;
+    bool ready_;  // A tensor that is not ready should have its value (re)copied to the device
 
     std::vector<size_t> shape_;
 

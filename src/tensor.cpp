@@ -24,6 +24,8 @@ Tensor::Tensor(bool device) : device_(device)
 #if !CUDA_ENABLED
     device_ = false;
 #endif
+
+    ready_ = !device;
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device), shape_(shape)
@@ -31,6 +33,8 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device),
 #if !CUDA_ENABLED
     device_ = false;
 #endif
+
+    ready_ = !device;
 
     size_t n = size();
 
@@ -56,6 +60,8 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 #if !CUDA_ENABLED
     device_ = false;
 #endif
+
+    ready_ = !device;
 
     size_t n = size();
 
