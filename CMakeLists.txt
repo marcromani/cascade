@@ -12,7 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(BUILD_SHARED "Build shared library" ON)
 option(CODE_COVERAGE "Build with code coverage flags, for GCC" OFF)
-option(ENABLE_CUDA "Enable GPU support, if available" ON)
+option(ENABLE_CUDA "Enable GPU support if available" ON)
 
 find_package(CUDA)
 
