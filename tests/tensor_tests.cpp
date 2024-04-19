@@ -7,7 +7,7 @@
 
 TEST(TensorTests, sum)
 {
-    constexpr int n = 1e3;
+    constexpr int n = 10;
 
     std::vector<float> x_(n);
     std::iota(x_.begin(), x_.end(), 0.f);
@@ -22,7 +22,7 @@ TEST(TensorTests, sum)
 
     result.forward_();
 
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < n; ++i)
     {
         std::cout << result[i] << " ";
     }
@@ -33,13 +33,15 @@ TEST(TensorTests, sum)
     size_t size = result.size() * result.size();
 
     float *grad = new float[size];
-    cudaMemcpy(grad, x.deviceGrad_.get(), size * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(grad, x.data_->deviceGrad.get(), size * sizeof(float), cudaMemcpyDeviceToHost);
 
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         std::cout << grad[i] << " ";
     }
     std::cout << std::endl;
 
     delete[] grad;
+
+    std::vector<std::vector<std::vector<float>>> data = {{{1, 1}, {2, 2}, {3, 3}}, {{4, 4}, {5, 5}, {6, 6}}};
 }

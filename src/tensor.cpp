@@ -1,5 +1,7 @@
 #include "tensor.h"
 
+#include "tensor_data.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -16,27 +18,30 @@
 
 namespace cascade
 {
-void sumForward(const Tensor &result, const Tensor &x, const Tensor &y);
-void sumBackward(const Tensor &x, const Tensor &y);
-
-Tensor::Tensor(bool device) : device_(device)
+Tensor::Tensor(bool device) : data_(std::make_shared<TensorData>())
 {
-#if !CUDA_ENABLED
-    device_ = false;
+#if CUDA_ENABLED
+    data_->device = device;
+#else
+    data_->device    = false;
 #endif
 
-    hostDataNeedsUpdate_   = false;
-    deviceDataNeedsUpdate_ = device_;
+    data_->hostDataNeedsUpdate   = false;
+    data_->deviceDataNeedsUpdate = false;
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device), shape_(shape)
+Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device) {}
+
+Tensor::Tensor(const std::vector<size_t> &shape, bool device) : shape_(shape), data_(std::make_shared<TensorData>())
 {
-#if !CUDA_ENABLED
-    device_ = false;
+#if CUDA_ENABLED
+    data_->device = device;
+#else
+    data_->device    = false;
 #endif
 
-    hostDataNeedsUpdate_   = false;
-    deviceDataNeedsUpdate_ = device_;
+    data_->hostDataNeedsUpdate   = data_->device;
+    data_->deviceDataNeedsUpdate = !data_->device;
 
     size_t n = size();
 
@@ -44,27 +49,29 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : device_(device),
     {
         allocateMemory(n, false);
 
-        if (device_)
+        if (data_->device)
         {
             // TODO: Write a kernel to initialize the data
         }
         else
         {
-            std::fill(hostData_.get(), hostData_.get() + n, 0.f);
+            std::fill(data_->hostData.get(), data_->hostData.get() + n, 0.f);
         }
     }
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device)
-: device_(device)
-, shape_(shape)
+: shape_(shape)
+, data_(std::make_shared<TensorData>())
 {
-#if !CUDA_ENABLED
-    device_ = false;
+#if CUDA_ENABLED
+    data_->device = device;
+#else
+    data_->device    = false;
 #endif
 
-    hostDataNeedsUpdate_   = false;
-    deviceDataNeedsUpdate_ = device_;
+    data_->hostDataNeedsUpdate   = data_->device;
+    data_->deviceDataNeedsUpdate = !data_->device;
 
     size_t n = size();
 
@@ -94,89 +101,95 @@ size_t Tensor::size() const
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
-Tensor Tensor::toHost() const
+void Tensor::toHost()
 {
 #if CUDA_ENABLED
-    if (device_)
+    if (data_->device)
     {
-        Tensor tensor(shape_, false);
+        data_->device = false;
 
-        size_t n = size();
+        if (data_->hostDataNeedsUpdate)
+        {
+            size_t n = size();
 
-        tensor.allocateMemory(n, false);
-        cudaMemcpy(tensor.hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+            if (data_->hostData == nullptr)
+            {
+                allocateMemory(n, false);
+            }
 
-        return tensor;
+            cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+
+            data_->hostDataNeedsUpdate = false;
+        }
     }
-    else
-    {
-        return *this;
-    }
-#else
-    return *this;
 #endif
 }
 
-Tensor Tensor::toDevice() const
+void Tensor::toDevice()
 {
-    if (device_)
-    {
-        return *this;
-    }
-
 #if CUDA_ENABLED
-    Tensor tensor(shape_, true);
+    if (!data_->device)
+    {
+        data_->device = true;
 
-    size_t n = size();
+        if (data_->deviceDataNeedsUpdate)
+        {
+            size_t n = size();
 
-    tensor.allocateMemory(n, false);
-    cudaMemcpy(tensor.deviceData_.get(), hostData_.get(), n * sizeof(float), cudaMemcpyHostToDevice);
+            if (data_->deviceData == nullptr)
+            {
+                allocateMemory(n, false);
+            }
 
-    return tensor;
-#else
-    return *this;
+            cudaMemcpy(data_->deviceData.get(), data_->hostData.get(), n * sizeof(float), cudaMemcpyHostToDevice);
+
+            data_->deviceDataNeedsUpdate = false;
+        }
+    }
 #endif
 }
 
-Tensor Tensor::operator+(const Tensor &other) const
+Tensor Tensor::operator+(Tensor &other)
 {
     if (other.shape_ != shape_)
     {
         throw std::invalid_argument("Tensor shapes must match for elementwise sum");
     }
 
-    Tensor x = toDevice();
-    Tensor y = other.toDevice();
+    toDevice();
+    other.toDevice();
 
     size_t n = size();
 
     // TODO: Maybe we should do lazy allocation too
-    x.allocateMemory(n * n, true);
-    y.allocateMemory(n * n, true);
+    allocateMemory(n * n, true);
+    other.allocateMemory(n * n, true);
 
     Tensor result(shape_, true);
 
-    result.children_.push_back(x);
-    result.children_.push_back(y);
+    result.children_.push_back(*this);
+    result.children_.push_back(other);
 
 #if CUDA_ENABLED
-    if (result.device_)
+    if (result.data_->device)
     {
-        result.forward_  = [result, x, y]() { kernelSumForward(result, x, y); };
-        result.backward_ = [result, x, y]() { kernelSumBackward(x, y); };
+        result.forward_  = [result, *this, other]() { kernelSumForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { kernelSumBackward(*this, other); };
     }
     else
     {
-        result.forward_  = [result, x, y]() { sumForward(result, x, y); };
-        result.backward_ = [result, x, y]() { sumBackward(x, y); };
+        result.forward_  = [result, *this, other]() { sumForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { sumBackward(*this, other); };
     }
 #else
-    result.forward_  = [result, x, y]() { sumForward(result, x, y); };
-    result.backward_ = [result, x, y]() { sumBackward(x, y); };
+    result.forward_  = [result, *this, other]() { sumForward(result, *this, other); };
+    result.backward_ = [result, *this, other]() { sumBackward(*this, other); };
 #endif
 
     return result;
 }
+
+void Tensor::eval() {}
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
 {
@@ -209,41 +222,39 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 void Tensor::allocateMemory(size_t size, bool grad)
 {
 #if CUDA_ENABLED
-    if (device_)
+    if (data_->device)
     {
         float *tmp;
         cudaMalloc(reinterpret_cast<void **>(&tmp), size * sizeof(float));
 
-        auto cudaDeleter = [](float *p) { cudaFree(p); };
-
         if (grad)
         {
-            deviceGrad_ = std::shared_ptr<float[]>(tmp, cudaDeleter);
+            data_->deviceGrad = std::unique_ptr<float[], CudaDeleter>(tmp, CudaDeleter {});
         }
         else
         {
-            deviceData_ = std::shared_ptr<float[]>(tmp, cudaDeleter);
+            data_->deviceData = std::unique_ptr<float[], CudaDeleter>(tmp, CudaDeleter {});
         }
     }
     else
     {
         if (grad)
         {
-            hostGrad_ = std::shared_ptr<float[]>(new float[size]);
+            data_->hostGrad = std::make_unique<float[]>(size);
         }
         else
         {
-            hostData_ = std::shared_ptr<float[]>(new float[size]);
+            data_->hostData = std::make_unique<float[]>(size);
         }
     }
 #else
     if (grad)
     {
-        hostGrad_ = std::shared_ptr<float[]>(new float[size]);
+        data_->hostGrad = std::make_unique<float[]>(size);
     }
     else
     {
-        hostData_ = std::shared_ptr<float[]>(new float[size]);
+        data_->hostData = std::make_unique<float[]>(size);
     }
 #endif
 }
@@ -251,16 +262,16 @@ void Tensor::allocateMemory(size_t size, bool grad)
 void Tensor::setData(const std::vector<float> &data)
 {
 #if CUDA_ENABLED
-    if (device_)
+    if (data_->device)
     {
-        cudaMemcpy(deviceData_.get(), data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(data_->deviceData.get(), data.data(), data.size() * sizeof(float), cudaMemcpyHostToDevice);
     }
     else
     {
-        std::copy(data.begin(), data.end(), hostData_.get());
+        std::copy(data.begin(), data.end(), data_->hostData.get());
     }
 #else
-    std::copy(data.begin(), data.end(), hostData_.get());
+    std::copy(data.begin(), data.end(), data_->hostData.get());
 #endif
 }
 
@@ -268,7 +279,7 @@ void sumForward(const Tensor &result, const Tensor &x, const Tensor &y)
 {
     for (size_t i = 0; i < result.size(); ++i)
     {
-        result.hostData_[i] = x.hostData_[i] + y.hostData_[i];
+        result.data_->hostData[i] = x.data_->hostData[i] + y.data_->hostData[i];
     }
 }
 

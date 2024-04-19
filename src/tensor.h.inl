@@ -5,6 +5,8 @@
 #error __FILE__ should only be included from tensor.h
 #endif
 
+#include "tensor_data.h"
+
 #include <cstddef>
 #include <memory>
 #include <type_traits>
@@ -15,7 +17,7 @@
 
 namespace cascade
 {
-template<typename... Args> const float &Tensor::operator[](Args... indices) const
+template<typename... Args> const float& Tensor::operator[](Args... indices) const
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
@@ -23,25 +25,25 @@ template<typename... Args> const float &Tensor::operator[](Args... indices) cons
     size_t idx = index({static_cast<size_t>(indices)...});
 
 #if CUDA_ENABLED
-    if (hostDataNeedsUpdate_)
+    if (data_->hostDataNeedsUpdate)
     {
         size_t n = size();
 
-        if (hostData_ == nullptr)
+        if (data_->hostData == nullptr)
         {
-            hostData_ = std::shared_ptr<float[]>(new float[n]);
+            data_->hostData = std::make_unique<float[]>(n);
         }
 
-        cudaMemcpy(hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
-        hostDataNeedsUpdate_ = false;
+        data_->hostDataNeedsUpdate = false;
     }
 #endif
 
-    return hostData_[idx];
+    return data_->hostData[idx];
 }
 
-template<typename... Args> float &Tensor::operator[](Args... indices)
+template<typename... Args> float& Tensor::operator[](Args... indices)
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
@@ -49,27 +51,28 @@ template<typename... Args> float &Tensor::operator[](Args... indices)
     size_t idx = index({static_cast<size_t>(indices)...});
 
 #if CUDA_ENABLED
-    if (device_)
+    // TODO: Find a better way and avoid marking for an update every time
+    if (data_->device)
     {
-        deviceDataNeedsUpdate_ = true;
+        data_->deviceDataNeedsUpdate = true;
     }
 
-    if (hostDataNeedsUpdate_)
+    if (data_->hostDataNeedsUpdate)
     {
         size_t n = size();
 
-        if (hostData_ == nullptr)
+        if (data_->hostData == nullptr)
         {
-            hostData_ = std::shared_ptr<float[]>(new float[n]);
+            data_->hostData = std::make_unique<float[]>(n);
         }
 
-        cudaMemcpy(hostData_.get(), deviceData_.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
-        hostDataNeedsUpdate_ = false;
+        data_->hostDataNeedsUpdate = false;
     }
 #endif
 
-    return hostData_[idx];
+    return data_->hostData[idx];
 }
 }  // namespace cascade
 

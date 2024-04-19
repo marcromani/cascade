@@ -1,5 +1,6 @@
 #include "kernel_sum.h"
 #include "tensor.h"
+#include "tensor_data.h"
 
 #include <cstddef>
 #include <cuda_runtime.h>
@@ -26,7 +27,7 @@ void kernelSumForward(const Tensor &result, const Tensor &x, const Tensor &y)
     size_t numBlocks = (size + blockSize - 1) / blockSize;
 
     kernelSumForward_<<<numBlocks, blockSize>>>(
-        result.deviceData_.get(), x.deviceData_.get(), y.deviceData_.get(), size);
+        result.data_->deviceData.get(), x.data_->deviceData.get(), y.data_->deviceData.get(), size);
 
     cudaDeviceSynchronize();
 }
@@ -51,7 +52,7 @@ __global__ void kernelSumBackward_(float *x, float *y, size_t size, const size_t
 
         for (size_t i = 0; (i < dims / 2) && allEqual; ++i)
         {
-            allEqual = allEqual && (indices[i] == indices[2 * i]);
+            allEqual = allEqual && (indices[i] == indices[i + dims / 2]);
         }
 
         if (allEqual)
@@ -61,8 +62,8 @@ __global__ void kernelSumBackward_(float *x, float *y, size_t size, const size_t
         }
         else
         {
-            x[idx] = 3.f;
-            y[idx] = 30.f;
+            x[idx] = 0.f;
+            y[idx] = 0.f;
         }
     }
 }
@@ -83,7 +84,7 @@ void kernelSumBackward(const Tensor &x, const Tensor &y)
     size_t numBlocks = (size * size + blockSize - 1) / blockSize;
 
     kernelSumBackward_<<<numBlocks, blockSize>>>(
-        x.deviceGrad_.get(), y.deviceGrad_.get(), size * size, shapePtr, 2 * dims);
+        x.data_->deviceGrad.get(), y.data_->deviceGrad.get(), size * size, shapePtr, 2 * dims);
 
     cudaDeviceSynchronize();
 

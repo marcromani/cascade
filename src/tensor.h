@@ -12,7 +12,7 @@
 
 namespace cascade
 {
-class Tensor final
+class Tensor
 {
 public:
     explicit Tensor(bool device = false);
@@ -28,42 +28,51 @@ public:
     template<typename... Args> const float &operator[](Args... indices) const;
     template<typename... Args> float &operator[](Args... indices);
 
-    Tensor toHost() const;
-    Tensor toDevice() const;
+    void toHost();
+    void toDevice();
 
-    Tensor operator+(const Tensor &other) const;
+    Tensor operator+(Tensor &other);
     Tensor operator-(const Tensor &other) const;
     Tensor operator*(const Tensor &other) const;
     Tensor operator/(const Tensor &other) const;
 
+    friend void kernelSumForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void kernelSumBackward(const Tensor &x, const Tensor &y);
+
+    friend void sumForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void sumBackward(const Tensor &x, const Tensor &y);
+
     template<typename... Args> Tensor sum(Args... indices) const;
 
+    void eval();
+
 private:
+    struct CudaDeleter final
+    {
+#if CUDA_ENABLED
+        void operator()(float *ptr) const { cudaFree(ptr); }
+#else
+        void operator()(float *ptr) const {}
+#endif
+    };
+
     size_t index(const std::vector<size_t> &indices) const;
 
     void allocateMemory(size_t size, bool grad);
 
     void setData(const std::vector<float> &data);
 
-public:
-    bool device_;
-
-    bool hostDataNeedsUpdate_;
-    bool deviceDataNeedsUpdate_;
-
     std::vector<size_t> shape_;
-
-    mutable std::shared_ptr<float[]> hostData_;
-    mutable std::shared_ptr<float[]> hostGrad_;
-
-    std::shared_ptr<float[]> deviceData_;
-    std::shared_ptr<float[]> deviceGrad_;
 
     std::vector<Tensor> children_;
     std::vector<Tensor> parents_;
 
+public:
     std::function<void()> forward_;
     std::function<void()> backward_;
+
+    class TensorData;
+    std::shared_ptr<TensorData> data_;
 };
 }  // namespace cascade
 

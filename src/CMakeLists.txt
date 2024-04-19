@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(HEADERS # cmake-format: sort
-            cascade.h functions/functions.h tensor.h tensor.h.inl var.h)
+set(HEADERS
+    # cmake-format: sort
+    cascade.h functions/functions.h tensor.h tensor.h.inl tensor_data.h var.h)
 
 set(SOURCES # cmake-format: sort
             node.cpp node_var.cpp tensor.cpp util.cpp var.cpp)
