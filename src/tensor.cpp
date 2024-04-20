@@ -11,7 +11,8 @@
 #include <vector>
 
 #if CUDA_ENABLED
-#include "kernels/kernel_sum.h"
+#include "kernels/kernel_add.h"
+#include "kernels/kernel_mul.h"
 
 #include <cuda_runtime.h>
 #endif
@@ -55,7 +56,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : shape_(shape), d
         }
         else
         {
-            std::fill(data_->hostData.get(), data_->hostData.get() + n, 0.f);
+            std::fill(data_->hostData.get(), data_->hostData.get() + n, 7.f);
         }
     }
 }
@@ -173,17 +174,57 @@ Tensor Tensor::operator+(Tensor &other)
 #if CUDA_ENABLED
     if (result.data_->device)
     {
-        result.forward_  = [result, *this, other]() { kernelSumForward(result, *this, other); };
-        result.backward_ = [result, *this, other]() { kernelSumBackward(*this, other); };
+        result.forward_  = [result, *this, other]() { kernelAddForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { kernelAddBackward(*this, other); };
     }
     else
     {
-        result.forward_  = [result, *this, other]() { sumForward(result, *this, other); };
-        result.backward_ = [result, *this, other]() { sumBackward(*this, other); };
+        result.forward_  = [result, *this, other]() { addForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { addBackward(*this, other); };
     }
 #else
-    result.forward_  = [result, *this, other]() { sumForward(result, *this, other); };
-    result.backward_ = [result, *this, other]() { sumBackward(*this, other); };
+    result.forward_  = [result, *this, other]() { addForward(result, *this, other); };
+    result.backward_ = [result, *this, other]() { addBackward(*this, other); };
+#endif
+
+    return result;
+}
+
+Tensor Tensor::operator*(Tensor &other)
+{
+    if (other.shape_ != shape_)
+    {
+        throw std::invalid_argument("Tensor shapes must match for elementwise multiplication");
+    }
+
+    toDevice();
+    other.toDevice();
+
+    size_t n = size();
+
+    // TODO: Maybe we should do lazy allocation too
+    allocateMemory(n * n, true);
+    other.allocateMemory(n * n, true);
+
+    Tensor result(shape_, true);
+
+    result.children_.push_back(*this);
+    result.children_.push_back(other);
+
+#if CUDA_ENABLED
+    if (result.data_->device)
+    {
+        result.forward_  = [result, *this, other]() { kernelMulForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { kernelMulBackward(*this, other); };
+    }
+    else
+    {
+        result.forward_  = [result, *this, other]() { mulForward(result, *this, other); };
+        result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
+    }
+#else
+    result.forward_  = [result, *this, other]() { mulForward(result, *this, other); };
+    result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
 #endif
 
     return result;
@@ -275,7 +316,7 @@ void Tensor::setData(const std::vector<float> &data)
 #endif
 }
 
-void sumForward(const Tensor &result, const Tensor &x, const Tensor &y)
+void addForward(const Tensor &result, const Tensor &x, const Tensor &y)
 {
     for (size_t i = 0; i < result.size(); ++i)
     {
@@ -283,7 +324,20 @@ void sumForward(const Tensor &result, const Tensor &x, const Tensor &y)
     }
 }
 
-void sumBackward(const Tensor &x, const Tensor &y)
+void addBackward(const Tensor &x, const Tensor &y)
+{
+    // TODO
+}
+
+void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
+{
+    for (size_t i = 0; i < result.size(); ++i)
+    {
+        result.data_->hostData[i] = x.data_->hostData[i] * y.data_->hostData[i];
+    }
+}
+
+void mulBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
 }

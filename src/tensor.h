@@ -32,15 +32,21 @@ public:
     void toDevice();
 
     Tensor operator+(Tensor &other);
-    Tensor operator-(const Tensor &other) const;
-    Tensor operator*(const Tensor &other) const;
-    Tensor operator/(const Tensor &other) const;
+    Tensor operator-(Tensor &other);
+    Tensor operator*(Tensor &other);
+    Tensor operator/(Tensor &other);
 
-    friend void kernelSumForward(const Tensor &result, const Tensor &x, const Tensor &y);
-    friend void kernelSumBackward(const Tensor &x, const Tensor &y);
+    friend void addForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void addBackward(const Tensor &x, const Tensor &y);
 
-    friend void sumForward(const Tensor &result, const Tensor &x, const Tensor &y);
-    friend void sumBackward(const Tensor &x, const Tensor &y);
+    friend void kernelAddForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void kernelAddBackward(const Tensor &x, const Tensor &y);
+
+    friend void mulForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void mulBackward(const Tensor &x, const Tensor &y);
+
+    friend void kernelMulForward(const Tensor &result, const Tensor &x, const Tensor &y);
+    friend void kernelMulBackward(const Tensor &x, const Tensor &y);
 
     template<typename... Args> Tensor sum(Args... indices) const;
 

@@ -11,7 +11,7 @@ file(GLOB FUNCTION_SOURCES functions/*.cpp)
 list(APPEND SOURCES ${FUNCTION_SOURCES})
 
 set(CUDA_SOURCES # cmake-format: sort
-                 kernels/kernel_sum.cu)
+                 kernels/kernel_add.cu kernels/kernel_mul.cu)
 list(APPEND SOURCES ${CUDA_SOURCES})
 
 add_library(cascade_static STATIC ${SOURCES})
