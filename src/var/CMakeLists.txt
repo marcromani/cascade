@@ -26,5 +26,12 @@ target_include_directories(
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
    AND CODE_COVERAGE)
-  target_compile_options(var_object PRIVATE -fprofile-arcs -ftest-coverage)
+  add_library(var_object_with_coverage OBJECT ${SOURCES})
+  set_target_properties(var_object_with_coverage
+                        PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(
+    var_object_with_coverage PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                                    ${CMAKE_CURRENT_SOURCE_DIR}/functions)
+  target_compile_options(var_object_with_coverage PRIVATE -fprofile-arcs
+                                                          -ftest-coverage)
 endif()
