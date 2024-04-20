@@ -19,7 +19,7 @@
 
 namespace cascade
 {
-Tensor::Tensor(bool device) : data_(std::make_shared<TensorData>())
+Tensor::Tensor([[maybe_unused]] bool device) : data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
     data_->device = device;
@@ -33,7 +33,9 @@ Tensor::Tensor(bool device) : data_(std::make_shared<TensorData>())
 
 Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device) {}
 
-Tensor::Tensor(const std::vector<size_t> &shape, bool device) : shape_(shape), data_(std::make_shared<TensorData>())
+Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
+: shape_(shape)
+, data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
     data_->device = device;
@@ -61,7 +63,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, bool device) : shape_(shape), d
     }
 }
 
-Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device)
+Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, [[maybe_unused]] bool device)
 : shape_(shape)
 , data_(std::make_shared<TensorData>())
 {
@@ -327,6 +329,8 @@ void addForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void addBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
+    x[0];
+    y[0];
 }
 
 void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
@@ -340,5 +344,7 @@ void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void mulBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
+    x[0];
+    y[0];
 }
 }  // namespace cascade

@@ -58,7 +58,7 @@ private:
 #if CUDA_ENABLED
         void operator()(float *ptr) const { cudaFree(ptr); }
 #else
-        void operator()(float *ptr) const {}
+        void operator()(float *ptr) const { delete[] ptr; }
 #endif
     };
 
