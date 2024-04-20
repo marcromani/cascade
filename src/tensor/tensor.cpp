@@ -156,7 +156,7 @@ Tensor Tensor::operator+(Tensor &other)
 {
     if (other.shape_ != shape_)
     {
-        throw std::invalid_argument("Tensor shapes must match for elementwise sum");
+        throw std::invalid_argument("Tensor shapes must match for elementwise addition");
     }
 
     toDevice();
