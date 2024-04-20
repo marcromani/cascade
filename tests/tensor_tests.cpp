@@ -7,22 +7,28 @@
 
 TEST(TensorTests, sum)
 {
-    constexpr int n = 10;
+    constexpr int n = 5;
 
-    std::vector<float> x_(n);
-    std::iota(x_.begin(), x_.end(), 0.f);
+    // std::vector<float> x_(n);
+    // std::iota(x_.begin(), x_.end(), 0.f);
 
-    const std::vector<float> y_(n, 0.5f);
+    // const std::vector<float> y_(n, 0.5f);
 
-    cascade::Tensor x({n}, x_, false);
-    cascade::Tensor y({n}, y_, false);
+    cascade::Tensor x(std::vector<size_t> {n}, false);
+    cascade::Tensor y(std::vector<size_t> {n}, false);
+
+    for (size_t i = 0; i < x.size(); ++i)
+    {
+        x[i] = i;
+        y[i] = 0.5 * i;
+    }
 
     // "Lazy" elementwise sum (automatically uses GPU if available)
-    cascade::Tensor result = x + y;
+    cascade::Tensor result = x * y;
 
     result.forward_();
 
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < result.size(); ++i)
     {
         std::cout << result[i] << " ";
     }
@@ -32,16 +38,12 @@ TEST(TensorTests, sum)
 
     size_t size = result.size() * result.size();
 
-    float *grad = new float[size];
-    cudaMemcpy(grad, x.data_->deviceGrad.get(), size * sizeof(float), cudaMemcpyDeviceToHost);
+    // TODO: Should copy the gradients too
+    x.toHost();
 
     for (size_t i = 0; i < size; ++i)
     {
-        std::cout << grad[i] << " ";
+        std::cout << x.data_->hostGrad[i] << " ";
     }
     std::cout << std::endl;
-
-    delete[] grad;
-
-    std::vector<std::vector<std::vector<float>>> data = {{{1, 1}, {2, 2}, {3, 3}}, {{4, 4}, {5, 5}, {6, 6}}};
 }
