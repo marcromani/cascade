@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 option(BUILD_SHARED "Build shared library" ON)
+option(BUILD_TESTS "Build tests executable" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
 option(CODE_COVERAGE "Build with code coverage flags, for GCC" OFF)
 option(ENABLE_CUDA "Enable GPU support if available" ON)
 
@@ -34,5 +36,11 @@ else()
 endif()
 
 add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(examples)
+
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif()
+
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
