@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(VAR_HEADERS
-    # cmake-format: sort
-    var/functions/functions.h var/var.h
+set(HEADERS # cmake-format: sort
+            functions/functions.h var.h)
+
+foreach(header ${HEADERS})
+  list(APPEND PUBLIC_HEADERS var/${header})
+endforeach()
+
+set(PUBLIC_HEADERS
+    ${PUBLIC_HEADERS}
     PARENT_SCOPE)
 
 set(SOURCES # cmake-format: sort

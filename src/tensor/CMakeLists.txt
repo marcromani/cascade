@@ -1,63 +1,32 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(HEADERS
-    # cmake-format: sort
-    cascade.h functions/functions.h tensor.h tensor.h.inl tensor_data.h var.h)
+set(HEADERS # cmake-format: sort
+            tensor.h tensor.h.inl tensor_data.h)
+
+foreach(header ${HEADERS})
+  list(APPEND PUBLIC_HEADERS tensor/${header})
+endforeach()
+
+set(PUBLIC_HEADERS
+    ${PUBLIC_HEADERS}
+    PARENT_SCOPE)
 
 set(SOURCES # cmake-format: sort
-            node.cpp node_var.cpp tensor.cpp util.cpp var.cpp)
-
-file(GLOB FUNCTION_SOURCES functions/*.cpp)
-list(APPEND SOURCES ${FUNCTION_SOURCES})
+            tensor.cpp)
 
 set(CUDA_SOURCES # cmake-format: sort
                  kernels/kernel_add.cu kernels/kernel_mul.cu)
 list(APPEND SOURCES ${CUDA_SOURCES})
 
-add_library(cascade_static STATIC ${SOURCES})
-set_target_properties(cascade_static PROPERTIES OUTPUT_NAME cascade_static)
+add_library(tensor_object OBJECT ${SOURCES})
+set_target_properties(tensor_object PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(
-  cascade_static
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-         $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
-target_compile_definitions(cascade_static PUBLIC CUDA_ENABLED=${CUDA_ENABLED})
-
-if(BUILD_SHARED)
-  add_library(cascade_shared SHARED ${SOURCES})
-  set_target_properties(cascade_shared PROPERTIES OUTPUT_NAME cascade_shared)
-  target_include_directories(
-    cascade_shared
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-           $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
-  target_compile_definitions(cascade_shared PUBLIC CUDA_ENABLED=${CUDA_ENABLED})
-endif()
+  tensor_object PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+                       $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
+target_compile_definitions(tensor_object PUBLIC CUDA_ENABLED=${CUDA_ENABLED})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
    AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
    AND CODE_COVERAGE)
-  add_library(cascade_with_coverage STATIC ${SOURCES})
-  set_target_properties(cascade_with_coverage PROPERTIES OUTPUT_NAME
-                                                         cascade_with_coverage)
-  target_include_directories(
-    cascade_with_coverage
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/functions
-           $<$<BOOL:${CUDA_ENABLED}>:${CUDA_INCLUDE_DIRS}>)
-  target_compile_definitions(cascade_with_coverage
-                             PUBLIC CUDA_ENABLED=${CUDA_ENABLED})
-  target_compile_options(cascade_with_coverage PRIVATE -fprofile-arcs
-                                                       -ftest-coverage)
+  target_compile_options(tensor_object PRIVATE -fprofile-arcs -ftest-coverage)
 endif()
-
-install(
-  TARGETS cascade_static
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
-
-if(TARGET cascade_shared)
-  install(
-    TARGETS cascade_shared
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
-endif()
-
-install(FILES ${HEADERS} DESTINATION include)
