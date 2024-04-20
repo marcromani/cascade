@@ -2,6 +2,7 @@
 #define CASCADE_KERNEL_MUL_H
 
 class Tensor;
+
 namespace cascade
 {
 void kernelMulForward(const Tensor& result, const Tensor& x, const Tensor& y);

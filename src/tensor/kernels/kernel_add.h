@@ -2,6 +2,7 @@
 #define CASCADE_KERNEL_ADD_H
 
 class Tensor;
+
 namespace cascade
 {
 void kernelAddForward(const Tensor& result, const Tensor& x, const Tensor& y);
