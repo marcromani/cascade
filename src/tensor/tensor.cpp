@@ -7,7 +7,9 @@
 #include <functional>
 #include <memory>
 #include <numeric>
+#include <stack>
 #include <stdexcept>
+#include <unordered_map>
 #include <vector>
 
 #if CUDA_ENABLED
@@ -24,7 +26,7 @@ Tensor::Tensor([[maybe_unused]] bool device) : data_(std::make_shared<TensorData
 #if CUDA_ENABLED
     data_->device = device;
 #else
-    data_->device    = false;
+    data_->device = false;
 #endif
 
     data_->hostDataNeedsUpdate   = false;
@@ -39,12 +41,15 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 {
 #if CUDA_ENABLED
     data_->device = device;
-#else
-    data_->device    = false;
-#endif
 
     data_->hostDataNeedsUpdate   = data_->device;
     data_->deviceDataNeedsUpdate = !data_->device;
+#else
+    data_->device = false;
+
+    data_->hostDataNeedsUpdate   = false;
+    data_->deviceDataNeedsUpdate = false;
+#endif
 
     size_t n = size();
 
@@ -58,7 +63,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
         }
         else
         {
-            std::fill(data_->hostData.get(), data_->hostData.get() + n, 7.f);
+            std::fill(data_->hostData.get(), data_->hostData.get() + n, 0.f);
         }
     }
 }
@@ -69,12 +74,15 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
 {
 #if CUDA_ENABLED
     data_->device = device;
-#else
-    data_->device    = false;
-#endif
 
     data_->hostDataNeedsUpdate   = data_->device;
     data_->deviceDataNeedsUpdate = !data_->device;
+#else
+    data_->device                = false;
+
+    data_->hostDataNeedsUpdate   = false;
+    data_->deviceDataNeedsUpdate = false;
+#endif
 
     size_t n = size();
 
@@ -122,8 +130,11 @@ void Tensor::toHost()
 
             cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
-            data_->hostDataNeedsUpdate = false;
+            data_->hostDataNeedsUpdate   = false;
+            data_->deviceDataNeedsUpdate = true;
         }
+
+        data_->deviceData.reset(nullptr);
     }
 #endif
 }
@@ -146,8 +157,11 @@ void Tensor::toDevice()
 
             cudaMemcpy(data_->deviceData.get(), data_->hostData.get(), n * sizeof(float), cudaMemcpyHostToDevice);
 
+            data_->hostDataNeedsUpdate   = true;
             data_->deviceDataNeedsUpdate = false;
         }
+
+        data_->hostData.reset(nullptr);
     }
 #endif
 }
@@ -168,10 +182,18 @@ Tensor Tensor::operator+(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
+    std::shared_ptr<Tensor> thisPtr  = std::make_shared<Tensor>(*this);
+    std::shared_ptr<Tensor> otherPtr = std::make_shared<Tensor>(other);
+
     Tensor result(shape_, true);
 
-    result.children_.push_back(*this);
-    result.children_.push_back(other);
+    result.children_.push_back(thisPtr);
+    result.children_.push_back(otherPtr);
+
+    std::shared_ptr<Tensor> parentPtr = std::make_shared<Tensor>(result);
+
+    thisPtr->parents_.push_back(parentPtr);
+    otherPtr->parents_.push_back(parentPtr);
 
 #if CUDA_ENABLED
     if (result.data_->device)
@@ -185,8 +207,8 @@ Tensor Tensor::operator+(Tensor &other)
         result.backward_ = [result, *this, other]() { addBackward(*this, other); };
     }
 #else
-    result.forward_  = [result, *this, other]() { addForward(result, *this, other); };
-    result.backward_ = [result, *this, other]() { addBackward(*this, other); };
+    result.forward_              = [result, *this, other]() { addForward(result, *this, other); };
+    result.backward_             = [result, *this, other]() { addBackward(*this, other); };
 #endif
 
     return result;
@@ -208,10 +230,18 @@ Tensor Tensor::operator*(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
+    std::shared_ptr<Tensor> thisPtr  = std::make_shared<Tensor>(*this);
+    std::shared_ptr<Tensor> otherPtr = std::make_shared<Tensor>(other);
+
     Tensor result(shape_, true);
 
-    result.children_.push_back(*this);
-    result.children_.push_back(other);
+    result.children_.push_back(thisPtr);
+    result.children_.push_back(otherPtr);
+
+    std::shared_ptr<Tensor> parentPtr = std::make_shared<Tensor>(result);
+
+    thisPtr->parents_.push_back(parentPtr);
+    otherPtr->parents_.push_back(parentPtr);
 
 #if CUDA_ENABLED
     if (result.data_->device)
@@ -225,14 +255,44 @@ Tensor Tensor::operator*(Tensor &other)
         result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
     }
 #else
-    result.forward_  = [result, *this, other]() { mulForward(result, *this, other); };
-    result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
+    result.forward_              = [result, *this, other]() { mulForward(result, *this, other); };
+    result.backward_             = [result, *this, other]() { mulBackward(*this, other); };
 #endif
 
     return result;
 }
 
-void Tensor::eval() {}
+template<typename... Args> Tensor Tensor::sum(Args... indices) const
+{
+    // TODO
+    return Tensor {};
+}
+
+void Tensor::eval() const
+{
+    std::vector<const Tensor *> nodes = sortedNodes();
+
+    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
+    {
+        const Tensor *node = *it;
+
+        if (node->forward_ != nullptr)
+        {
+            node->forward_();
+
+#if CUDA_ENABLED
+            if (node->data_->device)
+            {
+                node->data_->hostDataNeedsUpdate = true;
+            }
+            else
+            {
+                node->data_->deviceDataNeedsUpdate = true;
+            }
+#endif
+        }
+    }
+}
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
 {
@@ -316,6 +376,44 @@ void Tensor::setData(const std::vector<float> &data)
 #else
     std::copy(data.begin(), data.end(), data_->hostData.get());
 #endif
+}
+
+std::vector<const Tensor *> Tensor::sortedNodes() const
+{
+    std::vector<const Tensor *> nodes;
+
+    std::unordered_map<const Tensor *, size_t> numParents;
+
+    std::stack<const Tensor *> stack({this});
+
+    while (!stack.empty())
+    {
+        const Tensor *node = stack.top();
+        stack.pop();
+
+        nodes.push_back(node);
+
+        for (const std::shared_ptr<Tensor> &child: node->children_)
+        {
+            auto search = numParents.find(child.get());
+
+            if (search != numParents.end())
+            {
+                --numParents[child.get()];
+            }
+            else
+            {
+                numParents[child.get()] = child->parents_.size() - 1;
+            }
+
+            if (numParents[child.get()] == 0)
+            {
+                stack.push(child.get());
+            }
+        }
+    }
+
+    return nodes;
 }
 
 void addForward(const Tensor &result, const Tensor &x, const Tensor &y)

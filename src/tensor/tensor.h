@@ -25,8 +25,10 @@ public:
     size_t size() const;
     const std::vector<size_t> &shape() const;
 
-    template<typename... Args> const float &operator[](Args... indices) const;
-    template<typename... Args> float &operator[](Args... indices);
+    template<typename... Args> float operator[](Args... indices) const;
+
+    class ProxyValue;
+    template<typename... Args> ProxyValue operator[](Args... indices);
 
     void toHost();
     void toDevice();
@@ -35,6 +37,10 @@ public:
     Tensor operator-(Tensor &other);
     Tensor operator*(Tensor &other);
     Tensor operator/(Tensor &other);
+
+    template<typename... Args> Tensor sum(Args... indices) const;
+
+    void eval() const;
 
     friend void addForward(const Tensor &result, const Tensor &x, const Tensor &y);
     friend void addBackward(const Tensor &x, const Tensor &y);
@@ -47,10 +53,6 @@ public:
 
     friend void kernelMulForward(const Tensor &result, const Tensor &x, const Tensor &y);
     friend void kernelMulBackward(const Tensor &x, const Tensor &y);
-
-    template<typename... Args> Tensor sum(Args... indices) const;
-
-    void eval();
 
 private:
     struct CudaDeleter final
@@ -68,10 +70,12 @@ private:
 
     void setData(const std::vector<float> &data);
 
+    std::vector<const Tensor *> sortedNodes() const;
+
     std::vector<size_t> shape_;
 
-    std::vector<Tensor> children_;
-    std::vector<Tensor> parents_;
+    std::vector<std::shared_ptr<Tensor>> children_;
+    std::vector<std::shared_ptr<Tensor>> parents_;
 
 public:
     std::function<void()> forward_;

@@ -1,5 +1,6 @@
 #include "tensor.h"
 
+#include <cstddef>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <numeric>
@@ -7,7 +8,7 @@
 
 TEST(TensorTests, sum)
 {
-    constexpr int n = 5;
+    constexpr size_t n = 5;
 
     // std::vector<float> x_(n);
     // std::iota(x_.begin(), x_.end(), 0.f);
@@ -23,27 +24,35 @@ TEST(TensorTests, sum)
         y[i] = 0.5 * i;
     }
 
-    // "Lazy" elementwise sum (automatically uses GPU if available)
-    cascade::Tensor result = x * y;
+    // Lazy elementwise multiplication (automatically uses GPU if available)
+    cascade::Tensor z = x * y;
 
-    result.forward_();
+    cascade::Tensor w(std::vector<size_t> {n}, false);
 
-    for (size_t i = 0; i < result.size(); ++i)
+    for (size_t i = 0; i < w.size(); ++i)
     {
-        std::cout << result[i] << " ";
+        w[i] = 1.1;
+    }
+
+    // Lazy elementwise sum (automatically uses GPU if available)
+    w = w + z;
+
+    for (size_t i = 0; i < w.size(); ++i)
+    {
+        std::cout << w[i] << " ";
     }
     std::cout << std::endl;
 
-    result.backward_();
+    // result.backward_();
 
-    size_t size = result.size() * result.size();
+    // size_t size = result.size() * result.size();
 
-    // TODO: Should copy the gradients too
-    x.toHost();
+    // // TODO: Should copy the gradients too
+    // x.toHost();
 
-    for (size_t i = 0; i < size; ++i)
-    {
-        std::cout << x.data_->hostGrad[i] << " ";
-    }
-    std::cout << std::endl;
+    // for (size_t i = 0; i < size; ++i)
+    // {
+    //     std::cout << x.data_->hostGrad[i] << " ";
+    // }
+    // std::cout << std::endl;
 }

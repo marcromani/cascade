@@ -5,6 +5,7 @@
 #error __FILE__ should only be included from tensor.h
 #endif
 
+#include "proxy_value.h"
 #include "tensor_data.h"
 
 #include <cstddef>
@@ -17,12 +18,14 @@
 
 namespace cascade
 {
-template<typename... Args> const float& Tensor::operator[](Args... indices) const
+template<typename... Args> float Tensor::operator[](Args... indices) const
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
 
     size_t idx = index({static_cast<size_t>(indices)...});
+
+    eval();  // TODO: Not always
 
 #if CUDA_ENABLED
     if (data_->hostDataNeedsUpdate)
@@ -43,36 +46,41 @@ template<typename... Args> const float& Tensor::operator[](Args... indices) cons
     return data_->hostData[idx];
 }
 
-template<typename... Args> float& Tensor::operator[](Args... indices)
+template<typename... Args> Tensor::ProxyValue Tensor::operator[](Args... indices)
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
 
     size_t idx = index({static_cast<size_t>(indices)...});
 
+    eval();  // TODO: Not always
+
 #if CUDA_ENABLED
-    // TODO: Find a better way and avoid marking for an update every time
     if (data_->device)
     {
-        data_->deviceDataNeedsUpdate = true;
-    }
-
-    if (data_->hostDataNeedsUpdate)
-    {
-        size_t n = size();
-
-        if (data_->hostData == nullptr)
+        if (data_->hostDataNeedsUpdate)
         {
-            data_->hostData = std::make_unique<float[]>(n);
+            size_t n = size();
+
+            if (data_->hostData == nullptr)
+            {
+                data_->hostData = std::make_unique<float[]>(n);
+            }
+
+            cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
+
+            data_->hostDataNeedsUpdate = false;
         }
 
-        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
-
-        data_->hostDataNeedsUpdate = false;
+        return ProxyValue(data_->hostData[idx], &data_->deviceDataNeedsUpdate);
     }
+    else
+    {
+        return ProxyValue(data_->hostData[idx], nullptr);
+    }
+#else
+    return ProxyValue(data_->hostData[idx], nullptr);
 #endif
-
-    return data_->hostData[idx];
 }
 }  // namespace cascade
 
