@@ -18,12 +18,15 @@
 
 namespace cascade
 {
-template<typename... Args> float Tensor::operator[](Args... indices) const
+template<typename... Args> float Tensor::operator()(Args... indices) const
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
 
-    size_t idx = index({static_cast<size_t>(indices)...});
+    std::vector<size_t> indicesVector;
+    ((indicesVector.push_back(static_cast<size_t>(indices))), ...);
+
+    size_t idx = index(indicesVector);
 
     eval();  // TODO: Not always
 
@@ -46,12 +49,15 @@ template<typename... Args> float Tensor::operator[](Args... indices) const
     return data_->hostData[idx];
 }
 
-template<typename... Args> Tensor::ProxyValue Tensor::operator[](Args... indices)
+template<typename... Args> Tensor::ProxyValue Tensor::operator()(Args... indices)
 {
     static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
                   "Indices must be of type size_t or int");
 
-    size_t idx = index({static_cast<size_t>(indices)...});
+    std::vector<size_t> indicesVector;
+    ((indicesVector.push_back(static_cast<size_t>(indices))), ...);
+
+    size_t idx = index(indicesVector);
 
     eval();  // TODO: Not always
 
