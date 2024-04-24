@@ -182,18 +182,13 @@ Tensor Tensor::operator+(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
-    std::shared_ptr<Tensor> thisPtr  = std::make_shared<Tensor>(*this);
-    std::shared_ptr<Tensor> otherPtr = std::make_shared<Tensor>(other);
-
     Tensor result(shape_, true);
 
-    result.children_.push_back(thisPtr);
-    result.children_.push_back(otherPtr);
+    result.data_->children.push_back(*this);
+    result.data_->children.push_back(other);
 
-    std::shared_ptr<Tensor> parentPtr = std::make_shared<Tensor>(result);
-
-    thisPtr->parents_.push_back(parentPtr);
-    otherPtr->parents_.push_back(parentPtr);
+    this->data_->parents.push_back(result);
+    other.data_->parents.push_back(result);
 
 #if CUDA_ENABLED
     if (result.data_->device)
@@ -230,18 +225,13 @@ Tensor Tensor::operator*(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
-    std::shared_ptr<Tensor> thisPtr  = std::make_shared<Tensor>(*this);
-    std::shared_ptr<Tensor> otherPtr = std::make_shared<Tensor>(other);
-
     Tensor result(shape_, true);
 
-    result.children_.push_back(thisPtr);
-    result.children_.push_back(otherPtr);
+    result.data_->children.push_back(*this);
+    result.data_->children.push_back(other);
 
-    std::shared_ptr<Tensor> parentPtr = std::make_shared<Tensor>(result);
-
-    thisPtr->parents_.push_back(parentPtr);
-    otherPtr->parents_.push_back(parentPtr);
+    this->data_->parents.push_back(result);
+    other.data_->parents.push_back(result);
 
 #if CUDA_ENABLED
     if (result.data_->device)
@@ -380,12 +370,37 @@ void Tensor::setData(const std::vector<float> &data)
 
 std::vector<const Tensor *> Tensor::sortedNodes() const
 {
-    std::vector<const Tensor *> nodes;
-
     std::unordered_map<const Tensor *, size_t> numParents;
 
     std::stack<const Tensor *> stack({this});
 
+    // DFS to count the parents in the current tree while ignoring the others
+    while (!stack.empty())
+    {
+        const Tensor *node = stack.top();
+        stack.pop();
+
+        for (const Tensor &child: node->data_->children)
+        {
+            auto search = numParents.find(&child);
+
+            if (search != numParents.end())
+            {
+                ++numParents[&child];
+            }
+            else
+            {
+                numParents[&child] = 1;
+                stack.push(&child);
+            }
+        }
+    }
+
+    std::vector<const Tensor *> nodes;
+
+    stack.push(this);
+
+    // Topological sort
     while (!stack.empty())
     {
         const Tensor *node = stack.top();
@@ -393,22 +408,13 @@ std::vector<const Tensor *> Tensor::sortedNodes() const
 
         nodes.push_back(node);
 
-        for (const std::shared_ptr<Tensor> &child: node->children_)
+        for (const Tensor &child: node->data_->children)
         {
-            auto search = numParents.find(child.get());
+            --numParents[&child];
 
-            if (search != numParents.end())
+            if (numParents[&child] == 0)
             {
-                --numParents[child.get()];
-            }
-            else
-            {
-                numParents[child.get()] = child->parents_.size() - 1;
-            }
-
-            if (numParents[child.get()] == 0)
-            {
-                stack.push(child.get());
+                stack.push(&child);
             }
         }
     }
@@ -427,8 +433,8 @@ void addForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void addBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
-    x[0];
-    y[0];
+    //     x[0];
+    //     y[0];
 }
 
 void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
@@ -442,7 +448,7 @@ void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void mulBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
-    x[0];
-    y[0];
+    // x[0];
+    // y[0];
 }
 }  // namespace cascade

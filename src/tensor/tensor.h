@@ -25,10 +25,10 @@ public:
     size_t size() const;
     const std::vector<size_t> &shape() const;
 
-    template<typename... Args> float operator[](Args... indices) const;
+    template<typename... Args> float operator()(Args... indices) const;
 
     class ProxyValue;
-    template<typename... Args> ProxyValue operator[](Args... indices);
+    template<typename... Args> ProxyValue operator()(Args... indices);
 
     void toHost();
     void toDevice();
@@ -65,10 +65,6 @@ private:
 
     std::vector<size_t> shape_;
 
-    std::vector<std::shared_ptr<Tensor>> children_;
-    std::vector<std::shared_ptr<Tensor>> parents_;
-
-public:
     std::function<void()> forward_;
     std::function<void()> backward_;
 
