@@ -332,11 +332,11 @@ void Tensor::allocateMemory(size_t size, bool grad)
 
         if (grad)
         {
-            data_->deviceGrad = std::unique_ptr<float[], CudaDeleter>(tmp, CudaDeleter {});
+            data_->deviceGrad = std::unique_ptr<float[], TensorData::CudaDeleter>(tmp, TensorData::CudaDeleter {});
         }
         else
         {
-            data_->deviceData = std::unique_ptr<float[], CudaDeleter>(tmp, CudaDeleter {});
+            data_->deviceData = std::unique_ptr<float[], TensorData::CudaDeleter>(tmp, TensorData::CudaDeleter {});
         }
     }
     else

@@ -55,15 +55,6 @@ public:
     friend void kernelMulBackward(const Tensor &x, const Tensor &y);
 
 private:
-    struct CudaDeleter final
-    {
-#if CUDA_ENABLED
-        void operator()(float *ptr) const { cudaFree(ptr); }
-#else
-        void operator()(float *ptr) const { delete[] ptr; }
-#endif
-    };
-
     size_t index(const std::vector<size_t> &indices) const;
 
     void allocateMemory(size_t size, bool grad);

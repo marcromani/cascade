@@ -2,6 +2,7 @@
 #define CASCADE_TENSOR_DATA_H
 
 #include <memory>
+#include <vector>
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
@@ -11,6 +12,15 @@ namespace cascade
 {
 struct Tensor::TensorData final
 {
+    struct CudaDeleter final
+    {
+#if CUDA_ENABLED
+        void operator()(float *ptr) const { cudaFree(ptr); }
+#else
+        void operator()(float *ptr) const { delete[] ptr; }
+#endif
+    };
+
     bool device;
 
     bool hostDataNeedsUpdate;
@@ -21,6 +31,9 @@ struct Tensor::TensorData final
 
     std::unique_ptr<float[], CudaDeleter> deviceData;
     std::unique_ptr<float[], CudaDeleter> deviceGrad;
+
+    std::vector<Tensor> children;
+    std::vector<Tensor> parents;
 };
 }  // namespace cascade
 
