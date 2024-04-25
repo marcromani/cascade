@@ -224,7 +224,7 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
         if (indices.back() != shape_[indices.size() - 1] - 1)
         {
-            std::string spaces(indices.size(), ' ');
+            std::string spaces(indices.size() + 7, ' ');
             str += ",";
             str += "\n";
             str += spaces;
@@ -234,7 +234,7 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
 std::string Tensor::toString() const
 {
-    std::string str = "[";
+    std::string str = "Tensor([";
 
     for (size_t i = 0; i < shape_.front(); ++i)
     {
@@ -242,7 +242,14 @@ std::string Tensor::toString() const
         toString(indices, str);
     }
 
-    str += "]";
+    if (data_->device)
+    {
+        str += "], location=device)";
+    }
+    else
+    {
+        str += "], location=host)";
+    }
 
     return str;
 }
