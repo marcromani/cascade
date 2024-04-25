@@ -7,8 +7,10 @@
 #include <functional>
 #include <memory>
 #include <numeric>
+#include <ostream>
 #include <stack>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -37,6 +39,7 @@ Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device) {}
 
 Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 : shape_(shape)
+, offset_({shape.size(), 0})
 , data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
@@ -70,6 +73,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, [[maybe_unused]] bool device)
 : shape_(shape)
+, offset_({shape.size(), 0})
 , data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
@@ -166,6 +170,83 @@ void Tensor::toDevice()
 #endif
 }
 
+void Tensor::eval() const
+{
+    std::vector<const Tensor *> nodes = sortedNodes();
+
+    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
+    {
+        const Tensor *node = *it;
+
+        if (node->forward_ != nullptr)
+        {
+            node->forward_();
+
+#if CUDA_ENABLED
+            if (node->data_->device)
+            {
+                node->data_->hostDataNeedsUpdate = true;
+            }
+            else
+            {
+                node->data_->deviceDataNeedsUpdate = true;
+            }
+#endif
+        }
+    }
+}
+
+void Tensor::toString(const std::vector<size_t> &indices, std::string &str) const
+{
+    if (indices.size() == shape_.size())
+    {
+        size_t idx = index(indices);
+        str += std::to_string(idx);
+
+        if (indices.back() != shape_.back() - 1)
+        {
+            str += ", ";
+        }
+    }
+    else
+    {
+        str += "[";
+
+        for (int i = 0; i < shape_[indices.size()]; ++i)
+        {
+            std::vector<size_t> indices_ = indices;
+            indices_.push_back(i);
+
+            toString(indices_, str);
+        }
+
+        str += "]";
+
+        if (indices.back() != shape_[indices.size() - 1] - 1)
+        {
+            std::string spaces(indices.size(), ' ');
+            str += ",";
+            str += "\n";
+            str += spaces;
+        }
+    }
+}
+
+std::string Tensor::toString() const
+{
+    std::string str = "[";
+
+    for (size_t i = 0; i < shape_.front(); ++i)
+    {
+        std::vector<size_t> indices = {i};
+        toString(indices, str);
+    }
+
+    str += "]";
+
+    return str;
+}
+
 Tensor Tensor::operator+(Tensor &other)
 {
     if (other.shape_ != shape_)
@@ -256,32 +337,6 @@ template<typename... Args> Tensor Tensor::sum(Args... indices) const
 {
     // TODO
     return Tensor {};
-}
-
-void Tensor::eval() const
-{
-    std::vector<const Tensor *> nodes = sortedNodes();
-
-    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
-    {
-        const Tensor *node = *it;
-
-        if (node->forward_ != nullptr)
-        {
-            node->forward_();
-
-#if CUDA_ENABLED
-            if (node->data_->device)
-            {
-                node->data_->hostDataNeedsUpdate = true;
-            }
-            else
-            {
-                node->data_->deviceDataNeedsUpdate = true;
-            }
-#endif
-        }
-    }
 }
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
@@ -433,8 +488,8 @@ void addForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void addBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
-    //     x[0];
-    //     y[0];
+    // x[0];
+    // y[0];
 }
 
 void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
@@ -450,5 +505,11 @@ void mulBackward(const Tensor &x, const Tensor &y)
     // TODO
     // x[0];
     // y[0];
+}
+
+std::ostream &operator<<(std::ostream &os, const Tensor &tensor)
+{
+    os << tensor.toString();
+    return os;
 }
 }  // namespace cascade

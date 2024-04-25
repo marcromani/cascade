@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <ostream>
+#include <string>
 #include <vector>
 
 #if CUDA_ENABLED
@@ -33,14 +35,16 @@ public:
     void toHost();
     void toDevice();
 
+    void eval() const;
+
+    std::string toString() const;
+
     Tensor operator+(Tensor &other);
     Tensor operator-(Tensor &other);
     Tensor operator*(Tensor &other);
     Tensor operator/(Tensor &other);
 
     template<typename... Args> Tensor sum(Args... indices) const;
-
-    void eval() const;
 
     friend void addForward(const Tensor &result, const Tensor &x, const Tensor &y);
     friend void addBackward(const Tensor &x, const Tensor &y);
@@ -54,7 +58,11 @@ public:
     friend void kernelMulForward(const Tensor &result, const Tensor &x, const Tensor &y);
     friend void kernelMulBackward(const Tensor &x, const Tensor &y);
 
+    friend std::ostream &operator<<(std::ostream &os, const Tensor &tensor);
+
 private:
+    void toString(const std::vector<size_t> &indices, std::string &str) const;
+
     size_t index(const std::vector<size_t> &indices) const;
 
     void allocateMemory(size_t size, bool grad);
@@ -64,6 +72,7 @@ private:
     std::vector<const Tensor *> sortedNodes() const;
 
     std::vector<size_t> shape_;
+    std::vector<size_t> offset_;
 
     std::function<void()> forward_;
     std::function<void()> backward_;
