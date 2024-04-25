@@ -224,9 +224,11 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
         if (indices.back() != shape_[indices.size() - 1] - 1)
         {
+            std::string lines(shape_.size() - indices.size(), '\n');
             std::string spaces(indices.size() + 7, ' ');
+
             str += ",";
-            str += "\n";
+            str += lines;
             str += spaces;
         }
     }
