@@ -23,7 +23,7 @@ TEST(CovarianceTests, sigmaAndVarianceConsistencyForLeafNodeTest)
     EXPECT_DOUBLE_EQ(x.sigma() * x.sigma(), cascade::Var::covariance(x, x))
         << "The standard deviation is not the square root of the variance";
 
-    EXPECT_EQ(x.setSigma(22.0), true) << "Sigma setter returns `false` on a leaf node";
+    EXPECT_TRUE(x.setSigma(22.0)) << "Sigma setter returns `false` on a leaf node";
 
     EXPECT_DOUBLE_EQ(x.sigma() * x.sigma(), cascade::Var::covariance(x, x))
         << "The standard deviation is not the square root of the variance";
@@ -52,7 +52,7 @@ TEST(CovarianceTests, sigmaIsFixedForFunctionNodeTest)
 
     cascade::Var z = x * y;
 
-    EXPECT_EQ(z.setSigma(1.5), false) << "Sigma setter returns `true` on a functional node";
+    EXPECT_FALSE(z.setSigma(1.5)) << "Sigma setter returns `true` on a functional node";
 
     EXPECT_DOUBLE_EQ(z.sigma() * z.sigma(), 36.04) << "Sigma is manually changed on a functional node";
 }
