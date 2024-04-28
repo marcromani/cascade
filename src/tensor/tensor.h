@@ -17,15 +17,25 @@ namespace cascade
 class Tensor
 {
 public:
-    explicit Tensor(bool device = false);
+    explicit Tensor();
+
     explicit Tensor(float value, bool device = false);
+
     explicit Tensor(const std::vector<size_t> &shape, bool device = false);
+    explicit Tensor(const std::initializer_list<size_t> &shape, bool device = false);
+
     explicit Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, bool device = false);
+    explicit Tensor(const std::initializer_list<size_t> &shape,
+                    const std::initializer_list<float> &data,
+                    bool device = false);
 
     ~Tensor();
 
     size_t size() const;
     const std::vector<size_t> &shape() const;
+
+    bool empty() const;
+    bool scalar() const;
 
     template<typename... Args> float operator()(Args... indices) const;
 

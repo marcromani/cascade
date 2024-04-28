@@ -23,25 +23,29 @@
 
 namespace cascade
 {
-Tensor::Tensor([[maybe_unused]] bool device) : data_(std::make_shared<TensorData>())
+Tensor::Tensor() : data_(std::make_shared<TensorData>())
 {
-#if CUDA_ENABLED
-    data_->device = device;
-#else
-    data_->device = false;
-#endif
+    data_->scalar = false;
+
+    data_->device = false;  // Empty tensor has no data at all
 
     data_->hostDataNeedsUpdate   = false;
     data_->deviceDataNeedsUpdate = false;
 }
 
-Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device) {}
+Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device)
+{
+    data_->scalar = true;
+    shape_        = {};
+}
 
 Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 : shape_(shape)
 , offset_({shape.size(), 0})
 , data_(std::make_shared<TensorData>())
 {
+    data_->scalar = false;
+
 #if CUDA_ENABLED
     data_->device = device;
 
@@ -71,11 +75,15 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
     }
 }
 
+Tensor::Tensor(const std::initializer_list<size_t> &shape, bool device) : Tensor(std::vector<size_t>(shape), device) {}
+
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, [[maybe_unused]] bool device)
 : shape_(shape)
 , offset_({shape.size(), 0})
 , data_(std::make_shared<TensorData>())
 {
+    data_->scalar = false;
+
 #if CUDA_ENABLED
     data_->device = device;
 
@@ -102,11 +110,16 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
     }
 }
 
+Tensor::Tensor(const std::initializer_list<size_t> &shape, const std::initializer_list<float> &data, bool device)
+: Tensor(std::vector<size_t>(shape), std::vector<float>(data), device)
+{
+}
+
 Tensor::~Tensor() {}
 
 size_t Tensor::size() const
 {
-    if (shape_.empty())
+    if (shape_.empty() && !data_->scalar)
     {
         return 0;
     }
@@ -115,6 +128,10 @@ size_t Tensor::size() const
 }
 
 const std::vector<size_t> &Tensor::shape() const { return shape_; }
+
+bool Tensor::empty() const { return size() == 0; }
+
+bool Tensor::scalar() const { return data_->scalar; }
 
 void Tensor::toHost()
 {
