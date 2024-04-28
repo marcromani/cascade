@@ -253,21 +253,49 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
 std::string Tensor::toString() const
 {
-    std::string str = "Tensor([";
+    std::string str = "Tensor(";
 
-    for (size_t i = 0; i < shape_.front(); ++i)
+    if (data_->scalar)
     {
-        std::vector<size_t> indices = {i};
-        toString(indices, str);
-    }
-
-    if (data_->device)
-    {
-        str += "], location=device)";
+        str += std::to_string(32.1);
     }
     else
     {
-        str += "], location=host)";
+        str += "[";
+
+        if (size() != 0)
+        {
+            for (size_t i = 0; i < shape_.front(); ++i)
+            {
+                std::vector<size_t> indices = {i};
+                toString(indices, str);
+            }
+        }
+
+        str += "]";
+    }
+
+    str += ", shape=(";
+
+    if (!shape_.empty())
+    {
+        for (size_t i = 0; i < shape_.size() - 1; ++i)
+        {
+            str += std::to_string(shape_[i]) + ", ";
+        }
+
+        str += std::to_string(shape_.back());
+    }
+
+    str += ")";
+
+    if (data_->device)
+    {
+        str += ", location=device)";
+    }
+    else
+    {
+        str += ", location=host)";
     }
 
     return str;
