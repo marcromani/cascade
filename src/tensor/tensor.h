@@ -96,6 +96,6 @@ private:
 };
 }  // namespace cascade
 
-#include "tensor.h.inl"
+#include "tensor.inl.h"
 
 #endif

@@ -2,7 +2,7 @@
 
 clang-format -i src/*.h
 clang-format -i src/var/*.cpp src/var/*.h src/var/functions/*.cpp src/var/functions/*.h
-clang-format -i src/tensor/*.cpp src/tensor/*.h src/tensor/*.h.inl src/tensor/kernels/*.cu src/tensor/kernels/*.h
+clang-format -i src/tensor/*.cpp src/tensor/*.h src/tensor/*.inl.h src/tensor/kernels/*.cu src/tensor/kernels/*.h
 clang-format -i tests/*.cpp tests/include/*.h
 clang-format -i examples/*.cpp
 
