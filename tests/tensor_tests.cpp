@@ -15,18 +15,32 @@ TEST(TensorTests, emptyTensorHasCorrectPropertiesAfterInitialization)
     EXPECT_EQ(tensor.size(), 0) << "Empty tensor reports its size is not 0";
     EXPECT_TRUE(tensor.shape() == std::vector<size_t> {}) << "Empty tensor shape is not empty";
     EXPECT_FALSE(tensor.scalar()) << "Empty tensor reports it is a scalar";
-
-    tensor = cascade::Tensor({});
-
-    EXPECT_TRUE(tensor.empty()) << "Empty tensor reports it is not empty";
-    EXPECT_EQ(tensor.size(), 0) << "Empty tensor reports its size is not 0";
-    EXPECT_TRUE(tensor.shape() == std::vector<size_t> {}) << "Empty tensor shape is not empty";
-    EXPECT_FALSE(tensor.scalar()) << "Empty tensor reports it is a scalar";
 }
 
 TEST(TensorTests, scalarTensorHasCorrectPropertiesAfterInitialization)
 {
-    cascade::Tensor tensor(12.5f);
+    cascade::Tensor tensor({}, false);
+
+    EXPECT_FALSE(tensor.empty()) << "Scalar tensor reports it is empty";
+    EXPECT_EQ(tensor.size(), 1) << "Scalar tensor reports its size is not 1";
+    EXPECT_TRUE(tensor.shape() == std::vector<size_t> {}) << "Scalar tensor shape is not empty";
+    EXPECT_TRUE(tensor.scalar()) << "Scalar tensor reports it is not a scalar";
+
+    tensor = cascade::Tensor({}, true);
+
+    EXPECT_FALSE(tensor.empty()) << "Scalar tensor reports it is empty";
+    EXPECT_EQ(tensor.size(), 1) << "Scalar tensor reports its size is not 1";
+    EXPECT_TRUE(tensor.shape() == std::vector<size_t> {}) << "Scalar tensor shape is not empty";
+    EXPECT_TRUE(tensor.scalar()) << "Scalar tensor reports it is not a scalar";
+
+    tensor = cascade::Tensor(12.5f, false);
+
+    EXPECT_FALSE(tensor.empty()) << "Scalar tensor reports it is empty";
+    EXPECT_EQ(tensor.size(), 1) << "Scalar tensor reports its size is not 1";
+    EXPECT_TRUE(tensor.shape() == std::vector<size_t> {}) << "Scalar tensor shape is not empty";
+    EXPECT_TRUE(tensor.scalar()) << "Scalar tensor reports it is not a scalar";
+
+    tensor = cascade::Tensor(12.5f, true);
 
     EXPECT_FALSE(tensor.empty()) << "Scalar tensor reports it is empty";
     EXPECT_EQ(tensor.size(), 1) << "Scalar tensor reports its size is not 1";
@@ -36,7 +50,14 @@ TEST(TensorTests, scalarTensorHasCorrectPropertiesAfterInitialization)
 
 TEST(TensorTests, higherOrderTensorHasCorrectPropertiesAfterInitialization)
 {
-    cascade::Tensor tensor({3, 5, 1, 2});
+    cascade::Tensor tensor({3, 5, 1, 2}, false);
+
+    EXPECT_FALSE(tensor.empty()) << "Tensor reports it is empty";
+    EXPECT_EQ(tensor.size(), 30) << "Tensor reports wrong size";
+    EXPECT_TRUE(tensor.shape() == (std::vector<size_t> {3, 5, 1, 2})) << "Tensor has wrong shape";
+    EXPECT_FALSE(tensor.scalar()) << "Tensor reports it is a scalar";
+
+    tensor = cascade::Tensor({3, 5, 1, 2}, true);
 
     EXPECT_FALSE(tensor.empty()) << "Tensor reports it is empty";
     EXPECT_EQ(tensor.size(), 30) << "Tensor reports wrong size";
@@ -44,9 +65,16 @@ TEST(TensorTests, higherOrderTensorHasCorrectPropertiesAfterInitialization)
     EXPECT_FALSE(tensor.scalar()) << "Tensor reports it is a scalar";
 }
 
-TEST(TensorTests, degenerateHigherOrderTensorHasCorrectPropertiesAfterInitialization)
+TEST(TensorTests, degenerateTensorHasCorrectPropertiesAfterInitialization)
 {
-    cascade::Tensor tensor({1, 0, 7, 3});
+    cascade::Tensor tensor({0});
+
+    EXPECT_TRUE(tensor.empty()) << "Tensor reports it is not empty";
+    EXPECT_EQ(tensor.size(), 0) << "Tensor reports wrong size";
+    EXPECT_TRUE(tensor.shape() == (std::vector<size_t> {0})) << "Tensor has wrong shape";
+    EXPECT_FALSE(tensor.scalar()) << "Tensor reports it is not a scalar";
+
+    tensor = cascade::Tensor({1, 0, 7, 3});
 
     EXPECT_TRUE(tensor.empty()) << "Tensor reports it is not empty";
     EXPECT_EQ(tensor.size(), 0) << "Tensor reports wrong size";
@@ -56,8 +84,10 @@ TEST(TensorTests, degenerateHigherOrderTensorHasCorrectPropertiesAfterInitializa
 
 TEST(TensorTests, appropriateConstructorOverloadIsChosen)
 {
-    EXPECT_THROW(cascade::Tensor({}, {static_cast<int>(2.5f)}), std::invalid_argument)
-        << "Exception not thrown, constructor from data not called or it does not throw";
+    cascade::Tensor tensor({}, {static_cast<int>(2.5f)});
+
+    // TODO
+    // EXPECT_FLOAT_EQ(tensor.data_->hostData.get()[0], 2.f);
 }
 
 TEST(TensorTests, constructorFromDataThrows)
@@ -66,8 +96,143 @@ TEST(TensorTests, constructorFromDataThrows)
         << "Constructor from data does not throw";
 }
 
+TEST(TensorTests, sliceInsideBounds)
+{
+    cascade::Tensor tensor({3, 4, 1, 2});
+
+    cascade::Tensor slice = tensor.slice({0, 1, 2}, {1, 2, 4});
+
+    EXPECT_FALSE(slice.empty()) << "Tensor slice reports it is empty";
+    EXPECT_EQ(slice.size(), 4) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {1, 2, 1, 2})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+
+    slice = tensor.slice({0, 1, 2}, {1, 4, 2});
+
+    EXPECT_TRUE(slice.empty()) << "Tensor slice reports it is not empty";
+    EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {1, 0, 1, 2})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+}
+
+TEST(TensorTests, sliceOutsideBounds)
+{
+    cascade::Tensor tensor({2, 5, 7, 3});
+
+    cascade::Tensor slice = tensor.slice({2, 8, 10}, {1, 2, 4});
+
+    EXPECT_TRUE(slice.empty()) << "Tensor slice reports it is not empty";
+    EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {2, 2, 0, 3})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+
+    slice = tensor.slice({2, 8, 10}, {1, 4, 2});
+
+    EXPECT_TRUE(slice.empty()) << "Tensor slice reports it is not empty";
+    EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {2, 0, 0, 3})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+}
+
+TEST(TensorTests, sliceCrossingBounds)
+{
+    cascade::Tensor tensor({4, 6, 2, 1});
+
+    cascade::Tensor slice = tensor.slice({1, 3, 8}, {0, 2, 3}, {3, 0, 1});
+
+    EXPECT_FALSE(slice.empty()) << "Tensor slice reports it is empty";
+    EXPECT_EQ(slice.size(), 6) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {1, 3, 2, 1})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+
+    slice = tensor.slice({1, 8, 3}, {0, 2, 3}, {3, 0, 1});
+
+    EXPECT_TRUE(slice.empty()) << "Tensor slice reports it is not empty";
+    EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {1, 0, 2, 1})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+}
+
+TEST(TensorTests, sliceWithWrongInitializerListThrows)
+{
+    cascade::Tensor tensor({1, 2, 3, 4});
+
+    EXPECT_THROW(tensor.slice({}), std::invalid_argument) << "Slice with wrong arguments does not throw";
+    EXPECT_THROW(tensor.slice({3, 1}), std::invalid_argument) << "Slice with wrong arguments does not throw";
+    EXPECT_THROW(tensor.slice({3, 1, 2, 1}), std::invalid_argument) << "Slice with wrong arguments does not throw";
+
+    EXPECT_NO_THROW(tensor.slice({3, 1, 2})) << "Slice with correct arguments throws";
+}
+
+TEST(TensorTests, sliceEmptyTensorHasNoEffect)
+{
+    cascade::Tensor tensor;
+
+    cascade::Tensor slice = tensor.slice({3, 0, 5});
+
+    EXPECT_TRUE(slice.empty()) << "Tensor slice reports it is not empty";
+    EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
+    EXPECT_TRUE(slice.shape() == (std::vector<size_t> {})) << "Tensor slice has wrong shape";
+    EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+}
+
+TEST(TensorTests, elementAccessWithWrongNumberOfIndicesThrows)
+{
+    cascade::Tensor tensor({5, 2, 3, 2});
+
+    EXPECT_THROW(tensor(2), std::invalid_argument) << "Element access with wrong arguments does not throw";
+    EXPECT_THROW(tensor(2, 1), std::invalid_argument) << "Element access with wrong arguments does not throw";
+    EXPECT_THROW(tensor(2, 1, 2), std::invalid_argument) << "Element access with wrong arguments does not throw";
+    EXPECT_THROW(tensor(2, 1, 2, 1, 3), std::invalid_argument) << "Element access with wrong arguments does not throw";
+
+    EXPECT_NO_THROW(tensor(2, 1, 2, 1)) << "Element access with correct arguments throws";
+}
+
+TEST(TensorTests, elementAccessEmptyTensorThrows)
+{
+    cascade::Tensor tensor({5, 0, 3, 2});
+
+    EXPECT_THROW(tensor(4, 1, 2, 1), std::invalid_argument) << "Element access of empty tensor does not throw";
+}
+
 TEST(TensorTests, sum)
 {
+    std::cout << "Empty tensor:" << std::endl;
+    std::cout << cascade::Tensor() << std::endl;
+
+    std::cout << "\nUninitialized tensors:" << std::endl;
+    std::cout << cascade::Tensor({}) << std::endl;         // Scalar
+    std::cout << cascade::Tensor({5}) << std::endl;        // Vector
+    std::cout << cascade::Tensor({2, 3}) << std::endl;     // Matrix
+    std::cout << cascade::Tensor({2, 2, 2}) << std::endl;  // Rank 3 tensor
+
+    std::cout << "\nTensors initialized with provided data:" << std::endl;
+    std::cout << cascade::Tensor({}, {1.f}) << std::endl;                                            // Scalar
+    std::cout << cascade::Tensor({5}, {1.f, 2.f, 3.f, 4.f, 5.f}) << std::endl;                       // Vector
+    std::cout << cascade::Tensor({2, 3}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f}) << std::endl;               // Matrix
+    std::cout << cascade::Tensor({2, 2, 2}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f}) << std::endl;  // Rank 3 tensor
+
+    cascade::Tensor t({2, 3});
+
+    t(2);
+
+    // std::cout << "\nTensors filled with zeros:" << std::endl;
+    // std::cout << cascade::Tensor::zeros({}) << std::endl;         // Scalar
+    // std::cout << cascade::Tensor::zeros({5}) << std::endl;        // Vector
+    // std::cout << cascade::Tensor::zeros({2, 3}) << std::endl;     // Matrix
+    // std::cout << cascade::Tensor::zeros({2, 1, 4}) << std::endl;  // Rank 3 tensor
+
+    // std::cout << "\nTensors filled with ones:" << std::endl;
+    // std::cout << cascade::Tensor::ones({}) << std::endl;         // Scalar
+    // std::cout << cascade::Tensor::ones({5}) << std::endl;        // Vector
+    // std::cout << cascade::Tensor::ones({2, 3}) << std::endl;     // Matrix
+    // std::cout << cascade::Tensor::ones({2, 1, 4}) << std::endl;  // Rank 3 tensor
+
+    std::cout << "\nDegenerate tensors:" << std::endl;
+    std::cout << cascade::Tensor({0}) << std::endl;        // Vector
+    std::cout << cascade::Tensor({0, 3}) << std::endl;     // Matrix
+    std::cout << cascade::Tensor({2, 0, 2}) << std::endl;  // Rank 3 tensor
+
     constexpr size_t m = 2;
     constexpr size_t n = 3;
     constexpr size_t r = 2;
@@ -86,8 +251,8 @@ TEST(TensorTests, sum)
         {
             for (size_t k = 0; k < r; ++k)
             {
-                x(i, j, k) = i + j + k;
-                y(i, j, k) = 0.5 * j;
+                // x(i, j, k) = i + j + k;
+                // y(i, j, k) = 0.5 * j;
             }
         }
     }
@@ -103,7 +268,7 @@ TEST(TensorTests, sum)
         {
             for (size_t k = 0; k < r; ++k)
             {
-                w(i, j, k) = 1.1f;
+                // w(i, j, k) = 1.1f;
             }
         }
     }
@@ -130,6 +295,15 @@ TEST(TensorTests, sum)
 
     cascade::Tensor b({1, 1, 1, 1}, false);
     std::cout << b << std::endl;
+
+    cascade::Tensor scalar(27.4);
+
+    std::cout << scalar << std::endl;
+    std::cout << cascade::Tensor() << std::endl;
+
+    std::cout << cascade::Tensor({7}, true) << std::endl;
+
+    std::cout << cascade::Tensor({3, 0, 2, 5}, true) << std::endl;
 
     // cascade::Tensor w1({50, 10});
     // cascade::Tensor w2({100, 50});

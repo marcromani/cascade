@@ -23,29 +23,20 @@
 
 namespace cascade
 {
-Tensor::Tensor() : data_(std::make_shared<TensorData>())
+Tensor::Tensor() : scalar_(false), data_(std::make_shared<TensorData>())
 {
-    data_->scalar = false;
-
-    data_->device = false;  // Empty tensor has no data at all
+    data_->device = false;  // Empty tensor has no data at all, its location is irrelevant
 
     data_->hostDataNeedsUpdate   = false;
     data_->deviceDataNeedsUpdate = false;
 }
 
-Tensor::Tensor(float value, bool device) : Tensor({1}, {value}, device)
-{
-    data_->scalar = true;
-    shape_        = {};
-}
-
 Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
-: shape_(shape)
-, offset_({shape.size(), 0})
+: scalar_(shape.empty())
+, shape_(shape)
+, offset_(std::vector<size_t>(shape.size(), 0))
 , data_(std::make_shared<TensorData>())
 {
-    data_->scalar = false;
-
 #if CUDA_ENABLED
     data_->device = device;
 
@@ -70,7 +61,7 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
         }
         else
         {
-            std::fill(data_->hostData.get(), data_->hostData.get() + n, 0.f);
+            // std::fill(data_->hostData.get(), data_->hostData.get() + n, 0.f);
         }
     }
 }
@@ -78,12 +69,11 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 Tensor::Tensor(const std::initializer_list<size_t> &shape, bool device) : Tensor(std::vector<size_t>(shape), device) {}
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, [[maybe_unused]] bool device)
-: shape_(shape)
-, offset_({shape.size(), 0})
+: scalar_(shape.empty())
+, shape_(shape)
+, offset_(std::vector<size_t>(shape.size(), 0))
 , data_(std::make_shared<TensorData>())
 {
-    data_->scalar = false;
-
 #if CUDA_ENABLED
     data_->device = device;
 
@@ -115,11 +105,13 @@ Tensor::Tensor(const std::initializer_list<size_t> &shape, const std::initialize
 {
 }
 
+Tensor::Tensor(float value, bool device) : Tensor({}, {value}, device) {}
+
 Tensor::~Tensor() {}
 
 size_t Tensor::size() const
 {
-    if (shape_.empty() && !data_->scalar)
+    if (shape_.empty() && !scalar_)
     {
         return 0;
     }
@@ -131,7 +123,7 @@ const std::vector<size_t> &Tensor::shape() const { return shape_; }
 
 bool Tensor::empty() const { return size() == 0; }
 
-bool Tensor::scalar() const { return data_->scalar; }
+bool Tensor::scalar() const { return scalar_; }
 
 void Tensor::toHost()
 {
@@ -229,7 +221,7 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
     {
         str += "[";
 
-        for (int i = 0; i < shape_[indices.size()]; ++i)
+        for (size_t i = 0; i < shape_[indices.size()]; ++i)
         {
             std::vector<size_t> indices_ = indices;
             indices_.push_back(i);
@@ -255,7 +247,7 @@ std::string Tensor::toString() const
 {
     std::string str = "Tensor(";
 
-    if (data_->scalar)
+    if (scalar_)
     {
         str += std::to_string(32.1);
     }
@@ -391,6 +383,41 @@ template<typename... Args> Tensor Tensor::sum(Args... indices) const
 {
     // TODO
     return Tensor {};
+}
+
+Tensor Tensor::slice(const std::vector<std::vector<size_t>> &ranges) const
+{
+    for (const std::vector<size_t> &range: ranges)
+    {
+        if (range.size() != 3)
+        {
+            throw std::invalid_argument("Slice must be (dimension index, lower bound, upper bound)");
+        }
+    }
+
+    std::vector<size_t> shape  = shape_;
+    std::vector<size_t> offset = offset_;
+
+    // TODO: Check for repeated indices and ignore them (e.g. reverse sort and use the last)
+    for (const std::vector<size_t> &range: ranges)
+    {
+        const size_t idx = range[0];
+
+        if (idx < shape_.size())
+        {
+            const int length = std::min(range[2], shape_[idx]) - static_cast<int>(range[1]);
+            shape[idx]       = std::max(length, 0);
+
+            offset[idx] += range[1];
+        }
+    }
+
+    Tensor tensor = *this;
+
+    tensor.shape_  = shape;
+    tensor.offset_ = offset;
+
+    return tensor;
 }
 
 size_t Tensor::index(const std::vector<size_t> &indices) const
@@ -542,8 +569,8 @@ void addForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void addBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
-    // x[0];
-    // y[0];
+    x(0);
+    y(0);
 }
 
 void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
@@ -557,8 +584,8 @@ void mulForward(const Tensor &result, const Tensor &x, const Tensor &y)
 void mulBackward(const Tensor &x, const Tensor &y)
 {
     // TODO
-    // x[0];
-    // y[0];
+    x(0);
+    y(0);
 }
 
 std::ostream &operator<<(std::ostream &os, const Tensor &tensor)

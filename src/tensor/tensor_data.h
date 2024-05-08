@@ -21,8 +21,6 @@ struct Tensor::TensorData final
 #endif
     };
 
-    bool scalar;
-
     bool device;
 
     bool hostDataNeedsUpdate;

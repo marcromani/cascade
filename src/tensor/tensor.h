@@ -19,8 +19,6 @@ class Tensor
 public:
     explicit Tensor();
 
-    explicit Tensor(float value, bool device = false);
-
     explicit Tensor(const std::vector<size_t> &shape, bool device = false);
     explicit Tensor(const std::initializer_list<size_t> &shape, bool device = false);
 
@@ -28,6 +26,8 @@ public:
     explicit Tensor(const std::initializer_list<size_t> &shape,
                     const std::initializer_list<float> &data,
                     bool device = false);
+
+    explicit Tensor(float value, bool device = false);
 
     ~Tensor();
 
@@ -37,10 +37,10 @@ public:
     bool empty() const;
     bool scalar() const;
 
-    template<typename... Args> float operator()(Args... indices) const;
+    template<typename... T>
+    Tensor slice(const std::initializer_list<size_t> &firstRange, const std::initializer_list<T> &...otherRanges) const;
 
-    class ProxyValue;
-    template<typename... Args> ProxyValue operator()(Args... indices);
+    template<typename... T> Tensor operator()(size_t firstIndex, T... otherIndices) const;
 
     void toHost();
     void toDevice();
@@ -71,6 +71,8 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Tensor &tensor);
 
 private:
+    Tensor slice(const std::vector<std::vector<size_t>> &ranges) const;
+
     void toString(const std::vector<size_t> &indices, std::string &str) const;
 
     size_t index(const std::vector<size_t> &indices) const;
@@ -80,6 +82,8 @@ private:
     void setData(const std::vector<float> &data);
 
     std::vector<const Tensor *> sortedNodes() const;
+
+    bool scalar_;
 
     std::vector<size_t> shape_;
     std::vector<size_t> offset_;

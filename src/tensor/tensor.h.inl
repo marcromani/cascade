@@ -5,12 +5,11 @@
 #error __FILE__ should only be included from tensor.h
 #endif
 
-#include "proxy_value.h"
 #include "tensor_data.h"
 
 #include <cstddef>
-#include <memory>
 #include <type_traits>
+#include <vector>
 
 #if CUDA_ENABLED
 #include <cuda_runtime.h>
@@ -18,75 +17,50 @@
 
 namespace cascade
 {
-template<typename... Args> float Tensor::operator()(Args... indices) const
+template<typename... T>
+Tensor Tensor::slice(const std::initializer_list<size_t> &firstRange,
+                     const std::initializer_list<T> &...otherRanges) const
 {
-    static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
-                  "Indices must be of type size_t or int");
+    static_assert(std::conjunction_v<std::disjunction<std::is_same<T, size_t>, std::is_same<T, int>>...>,
+                  "Ranges must be initializer lists of type size_t or int");
 
-    std::vector<size_t> indicesVector;
-    ((indicesVector.push_back(static_cast<size_t>(indices))), ...);
+    std::vector<std::vector<size_t>> rangesVector = {{firstRange.begin(), firstRange.end()}};
+    ((rangesVector.emplace_back(otherRanges.begin(), otherRanges.end())), ...);
 
-    size_t idx = index(indicesVector);
-
-    eval();  // TODO: Not always
-
-#if CUDA_ENABLED
-    if (data_->hostDataNeedsUpdate)
-    {
-        size_t n = size();
-
-        if (data_->hostData == nullptr)
-        {
-            data_->hostData = std::make_unique<float[]>(n);
-        }
-
-        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
-
-        data_->hostDataNeedsUpdate = false;
-    }
-#endif
-
-    return data_->hostData[idx];
+    return slice(rangesVector);
 }
 
-template<typename... Args> Tensor::ProxyValue Tensor::operator()(Args... indices)
+template<typename... T> Tensor Tensor::operator()(size_t firstIndex, T... otherIndices) const
 {
-    static_assert(std::conjunction_v<std::disjunction<std::is_same<Args, size_t>, std::is_same<Args, int>>...>,
+    static_assert(std::conjunction_v<std::disjunction<std::is_same<T, size_t>, std::is_same<T, int>>...>,
                   "Indices must be of type size_t or int");
 
-    std::vector<size_t> indicesVector;
-    ((indicesVector.push_back(static_cast<size_t>(indices))), ...);
+    std::vector<size_t> indicesVector = {firstIndex};
+    ((indicesVector.push_back(static_cast<size_t>(otherIndices))), ...);
 
-    size_t idx = index(indicesVector);
-
-    eval();  // TODO: Not always
-
-#if CUDA_ENABLED
-    if (data_->device)
+    if (empty())
     {
-        if (data_->hostDataNeedsUpdate)
-        {
-            size_t n = size();
-
-            if (data_->hostData == nullptr)
-            {
-                data_->hostData = std::make_unique<float[]>(n);
-            }
-
-            cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
-
-            data_->hostDataNeedsUpdate = false;
-        }
-
-        return ProxyValue(data_->hostData[idx], &data_->deviceDataNeedsUpdate);
+        throw std::invalid_argument("Cannot access element of an empty tensor");
     }
-    else
+
+    if (indicesVector.size() != shape_.size())
     {
-        return ProxyValue(data_->hostData[idx], nullptr);
+        throw std::invalid_argument("Number of indices must match tensor dimensionality");
     }
-#else
-    return ProxyValue(data_->hostData[idx], nullptr);
-#endif
+
+    std::vector<std::vector<size_t>> rangesVector;
+
+    for (size_t i = 0; i < indicesVector.size(); ++i)
+    {
+        rangesVector.push_back({i, indicesVector[i], indicesVector[i] + 1});
+    }
+
+    Tensor tensor = slice(rangesVector);
+
+    tensor.scalar_ = true;
+    tensor.shape_  = {};
+
+    return tensor;
 }
 }  // namespace cascade
 

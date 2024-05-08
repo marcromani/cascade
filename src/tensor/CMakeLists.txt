@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(HEADERS # cmake-format: sort
-            proxy_value.h tensor.h tensor.h.inl tensor_data.h)
+            tensor.h tensor.h.inl tensor_data.h)
 
 foreach(header ${HEADERS})
   list(APPEND PUBLIC_HEADERS tensor/${header})
