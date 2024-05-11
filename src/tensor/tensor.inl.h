@@ -24,6 +24,11 @@ Tensor Tensor::slice(const std::initializer_list<size_t> &firstRange,
     static_assert(std::conjunction_v<std::disjunction<std::is_same<T, size_t>, std::is_same<T, int>>...>,
                   "Ranges must be initializer lists of type size_t or int");
 
+    if (scalar_)
+    {
+        throw std::invalid_argument("Cannot slice a scalar");
+    }
+
     std::vector<std::vector<size_t>> rangesVector = {{firstRange.begin(), firstRange.end()}};
     ((rangesVector.emplace_back(otherRanges.begin(), otherRanges.end())), ...);
 
@@ -43,7 +48,7 @@ template<typename... T> Tensor Tensor::operator()(size_t firstIndex, T... otherI
         throw std::invalid_argument("Cannot access element of an empty tensor");
     }
 
-    if (indicesVector.size() != shape_.size())
+    if (indicesVector.size() != sliceShape_.size())
     {
         throw std::invalid_argument("Number of indices must match tensor dimensionality");
     }
@@ -57,8 +62,8 @@ template<typename... T> Tensor Tensor::operator()(size_t firstIndex, T... otherI
 
     Tensor tensor = slice(rangesVector);
 
-    tensor.scalar_ = true;
-    tensor.shape_  = {};
+    tensor.scalar_     = true;
+    tensor.sliceShape_ = {};
 
     return tensor;
 }

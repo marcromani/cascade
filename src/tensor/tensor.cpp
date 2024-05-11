@@ -35,8 +35,8 @@ Tensor::Tensor() : scalar_(false), data_(std::make_shared<TensorData>())
 
 Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
 : scalar_(shape.empty())
-, shape_(shape)
-, offset_(std::vector<size_t>(shape.size(), 0))
+, sliceShape_(shape)
+, sliceOffset_(std::vector<size_t>(std::max(shape.size(), static_cast<size_t>(1)), 0))
 , data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
@@ -45,8 +45,10 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
     data_->hostDataNeedsUpdate   = data_->device;
     data_->deviceDataNeedsUpdate = false;
 #else
-    data_->device = false;
+    data_->device    = false;
 #endif
+
+    data_->shape = shape;
 
     size_t n = size();
 
@@ -69,8 +71,8 @@ Tensor::Tensor(const std::initializer_list<size_t> &shape, bool device) : Tensor
 
 Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data, [[maybe_unused]] bool device)
 : scalar_(shape.empty())
-, shape_(shape)
-, offset_(std::vector<size_t>(shape.size(), 0))
+, sliceShape_(shape)
+, sliceOffset_(std::vector<size_t>(std::max(shape.size(), static_cast<size_t>(1)), 0))
 , data_(std::make_shared<TensorData>())
 {
 #if CUDA_ENABLED
@@ -79,8 +81,10 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
     data_->hostDataNeedsUpdate   = data_->device;
     data_->deviceDataNeedsUpdate = false;
 #else
-    data_->device = false;
+    data_->device    = false;
 #endif
+
+    data_->shape = shape;
 
     size_t n = size();
 
@@ -105,17 +109,19 @@ Tensor::Tensor(float value, bool device) : Tensor({}, {value}, device) {}
 
 Tensor::~Tensor() {}
 
-size_t Tensor::size() const
+size_t Tensor::size(bool slice) const
 {
-    if (shape_.empty() && !scalar_)
+    const std::vector<size_t> &shape = slice ? sliceShape_ : data_->shape;
+
+    if (shape.empty() && !scalar_)
     {
         return 0;
     }
 
-    return std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<size_t>());
+    return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
 }
 
-const std::vector<size_t> &Tensor::shape() const { return shape_; }
+const std::vector<size_t> &Tensor::shape() const { return sliceShape_; }
 
 bool Tensor::empty() const { return size() == 0; }
 
@@ -130,7 +136,7 @@ void Tensor::toHost()
 
         if (data_->hostDataNeedsUpdate)
         {
-            size_t n = size();
+            size_t n = size(false);
 
             if (data_->hostData == nullptr)
             {
@@ -154,7 +160,7 @@ void Tensor::toDevice()
     {
         data_->device = true;
 
-        size_t n = size();
+        size_t n = size(false);
 
         if (data_->deviceData == nullptr)
         {
@@ -207,7 +213,7 @@ void Tensor::eval() const
         {
             cudaMemcpy(node->data_->deviceData.get(),
                        node->data_->hostData.get(),
-                       node->size() * sizeof(float),
+                       node->size(false) * sizeof(float),
                        cudaMemcpyHostToDevice);
 
             node->data_->deviceDataNeedsUpdate = false;
@@ -230,12 +236,12 @@ void Tensor::eval() const
 
 void Tensor::toString(const std::vector<size_t> &indices, std::string &str) const
 {
-    if (indices.size() == shape_.size())
+    if (indices.size() == sliceShape_.size())
     {
         size_t idx = index(indices);
         str += std::to_string(data_->hostData[idx]);
 
-        if (indices.back() != shape_.back() - 1)
+        if (indices.back() != sliceShape_.back() - 1)
         {
             str += ", ";
         }
@@ -244,7 +250,7 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
     {
         str += "[";
 
-        for (size_t i = 0; i < shape_[indices.size()]; ++i)
+        for (size_t i = 0; i < sliceShape_[indices.size()]; ++i)
         {
             std::vector<size_t> indices_ = indices;
             indices_.push_back(i);
@@ -254,9 +260,9 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
         str += "]";
 
-        if (indices.back() != shape_[indices.size() - 1] - 1)
+        if (indices.back() != sliceShape_[indices.size() - 1] - 1)
         {
-            std::string lines(shape_.size() - indices.size(), '\n');
+            std::string lines(sliceShape_.size() - indices.size(), '\n');
             std::string spaces(indices.size() + 7, ' ');
 
             str += ",";
@@ -273,7 +279,14 @@ std::string Tensor::toString() const
 #if CUDA_ENABLED
     if (data_->hostDataNeedsUpdate)
     {
-        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
+        size_t n = size(false);
+
+        if (data_->hostData == nullptr)
+        {
+            data_->hostData = std::make_unique<float[]>(n);
+        }
+
+        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
         data_->hostDataNeedsUpdate = false;
     }
@@ -283,7 +296,10 @@ std::string Tensor::toString() const
 
     if (scalar_)
     {
-        str += std::to_string(data_->hostData[0]);
+        std::vector<size_t> indices(data_->shape.size(), 0);
+        size_t idx = index(indices);
+
+        str += std::to_string(data_->hostData[idx]);
     }
     else
     {
@@ -291,7 +307,7 @@ std::string Tensor::toString() const
 
         if (size() != 0)
         {
-            for (size_t i = 0; i < shape_.front(); ++i)
+            for (size_t i = 0; i < sliceShape_.front(); ++i)
             {
                 std::vector<size_t> indices = {i};
                 toString(indices, str);
@@ -303,14 +319,14 @@ std::string Tensor::toString() const
 
     str += ", shape=(";
 
-    if (!shape_.empty())
+    if (!sliceShape_.empty())
     {
-        for (size_t i = 0; i < shape_.size() - 1; ++i)
+        for (size_t i = 0; i < sliceShape_.size() - 1; ++i)
         {
-            str += std::to_string(shape_[i]) + ", ";
+            str += std::to_string(sliceShape_[i]) + ", ";
         }
 
-        str += std::to_string(shape_.back());
+        str += std::to_string(sliceShape_.back());
     }
 
     str += ")";
@@ -329,7 +345,7 @@ std::string Tensor::toString() const
 
 Tensor Tensor::operator+(Tensor &other)
 {
-    if (other.shape_ != shape_)
+    if (other.sliceShape_ != sliceShape_)
     {
         throw std::invalid_argument("Tensor shapes must match for elementwise addition");
     }
@@ -344,7 +360,7 @@ Tensor Tensor::operator+(Tensor &other)
     other.allocateMemory(n * n, true);
 
     // Set tensor as not realized
-    Tensor result(shape_, true);
+    Tensor result(sliceShape_, true);
 
     result.data_->children.push_back(*this);
     result.data_->children.push_back(other);
@@ -373,7 +389,7 @@ Tensor Tensor::operator+(Tensor &other)
 
 Tensor Tensor::operator*(Tensor &other)
 {
-    if (other.shape_ != shape_)
+    if (other.sliceShape_ != sliceShape_)
     {
         throw std::invalid_argument("Tensor shapes must match for elementwise multiplication");
     }
@@ -387,7 +403,7 @@ Tensor Tensor::operator*(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
-    Tensor result(shape_, true);
+    Tensor result(sliceShape_, true);
 
     result.data_->children.push_back(*this);
     result.data_->children.push_back(other);
@@ -430,17 +446,17 @@ Tensor Tensor::slice(const std::vector<std::vector<size_t>> &ranges) const
         }
     }
 
-    std::vector<size_t> shape  = shape_;
-    std::vector<size_t> offset = offset_;
+    std::vector<size_t> shape  = sliceShape_;
+    std::vector<size_t> offset = sliceOffset_;
 
     // TODO: Check for repeated indices and ignore them (e.g. reverse sort and use the last)
     for (const std::vector<size_t> &range: ranges)
     {
         const size_t idx = range[0];
 
-        if (idx < shape_.size())
+        if (idx < sliceShape_.size())
         {
-            const int length = std::min(range[2], shape_[idx]) - static_cast<int>(range[1]);
+            const int length = std::min(range[2], sliceShape_[idx]) - static_cast<int>(range[1]);
             shape[idx]       = std::max(length, 0);
 
             offset[idx] += range[1];
@@ -449,8 +465,8 @@ Tensor Tensor::slice(const std::vector<std::vector<size_t>> &ranges) const
 
     Tensor tensor = *this;
 
-    tensor.shape_  = shape;
-    tensor.offset_ = offset;
+    tensor.sliceShape_  = shape;
+    tensor.sliceOffset_ = offset;
 
     return tensor;
 }
@@ -459,8 +475,7 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 {
     size_t n = indices.size();
 
-    // No need to check if indices is empty as array subscripting requires at least one parameter
-    if (n != shape_.size())
+    if (n != data_->shape.size())
     {
         throw std::invalid_argument("Number of indices must match tensor dimensionality");
     }
@@ -470,20 +485,20 @@ size_t Tensor::index(const std::vector<size_t> &indices) const
 
     for (int i = n - 1; i >= 0; --i)
     {
-        if (indices[i] >= shape_[i])
+        if (sliceOffset_[i] + indices[i] >= data_->shape[i])
         {
             throw std::out_of_range("Index out of range");
         }
 
         // Row-major order
-        idx += indices[i] * stride;
-        stride *= shape_[i];
+        idx += (sliceOffset_[i] + indices[i]) * stride;
+        stride *= data_->shape[i];
     }
 
     return idx;
 }
 
-void Tensor::allocateMemory(size_t size, bool grad)
+void Tensor::allocateMemory(size_t size, bool grad) const
 {
 #if CUDA_ENABLED
     if (data_->device)

@@ -153,18 +153,18 @@ TEST(TensorTests, sliceCrossingBounds)
     EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
 }
 
-TEST(TensorTests, sliceWithWrongInitializerListThrows)
+TEST(TensorTests, slicingWithWrongInitializerListThrows)
 {
     cascade::Tensor tensor({1, 2, 3, 4});
 
-    EXPECT_THROW(tensor.slice({}), std::invalid_argument) << "Slice with wrong arguments does not throw";
-    EXPECT_THROW(tensor.slice({3, 1}), std::invalid_argument) << "Slice with wrong arguments does not throw";
-    EXPECT_THROW(tensor.slice({3, 1, 2, 1}), std::invalid_argument) << "Slice with wrong arguments does not throw";
+    EXPECT_THROW(tensor.slice({}), std::invalid_argument) << "Slicing with wrong arguments does not throw";
+    EXPECT_THROW(tensor.slice({3, 1}), std::invalid_argument) << "Slicing with wrong arguments does not throw";
+    EXPECT_THROW(tensor.slice({3, 1, 2, 1}), std::invalid_argument) << "Slicing with wrong arguments does not throw";
 
-    EXPECT_NO_THROW(tensor.slice({3, 1, 2})) << "Slice with correct arguments throws";
+    EXPECT_NO_THROW(tensor.slice({3, 1, 2})) << "Slicing with correct arguments throws";
 }
 
-TEST(TensorTests, sliceEmptyTensorHasNoEffect)
+TEST(TensorTests, slicingEmptyTensorHasNoEffect)
 {
     cascade::Tensor tensor;
 
@@ -174,6 +174,13 @@ TEST(TensorTests, sliceEmptyTensorHasNoEffect)
     EXPECT_EQ(slice.size(), 0) << "Tensor slice reports wrong size";
     EXPECT_TRUE(slice.shape() == (std::vector<size_t> {})) << "Tensor slice has wrong shape";
     EXPECT_FALSE(slice.scalar()) << "Tensor reports it is a scalar";
+}
+
+TEST(TensorTests, slicingScalarTensorThrows)
+{
+    cascade::Tensor tensor({}, {32.8});
+
+    EXPECT_THROW(tensor.slice({0, 0, 1}), std::invalid_argument) << "Slicing a scalar tensor does not throw";
 }
 
 TEST(TensorTests, elementAccessWithWrongNumberOfIndicesThrows)
@@ -195,26 +202,40 @@ TEST(TensorTests, elementAccessEmptyTensorThrows)
     EXPECT_THROW(tensor(4, 1, 2, 1), std::invalid_argument) << "Element access of empty tensor does not throw";
 }
 
+TEST(TensorTests, elementAccess)
+{
+    std::vector<float> data(120);
+    std::iota(data.begin(), data.end(), 0.f);
+
+    cascade::Tensor tensor({5, 3, 4, 2}, data);
+
+    cascade::Tensor scalar = tensor(2, 1, 3, 0);
+
+    // scalar.item() == 62.f;
+}
+
 TEST(TensorTests, sum)
 {
-    std::cout << "Empty tensor:" << std::endl;
-    std::cout << cascade::Tensor() << std::endl;
+    // std::cout << "Empty tensor:" << std::endl;
+    // std::cout << cascade::Tensor() << std::endl;
 
-    std::cout << "\nUninitialized tensors:" << std::endl;
-    std::cout << cascade::Tensor({}) << std::endl;         // Scalar
-    std::cout << cascade::Tensor({5}) << std::endl;        // Vector
-    std::cout << cascade::Tensor({2, 3}) << std::endl;     // Matrix
-    std::cout << cascade::Tensor({2, 2, 2}) << std::endl;  // Rank 3 tensor
+    // std::cout << "\nUninitialized tensors:" << std::endl;
+    // std::cout << cascade::Tensor({}) << std::endl;         // Scalar
+    // std::cout << cascade::Tensor({5}) << std::endl;        // Vector
+    // std::cout << cascade::Tensor({2, 3}) << std::endl;     // Matrix
+    // std::cout << cascade::Tensor({2, 2, 2}) << std::endl;  // Rank 3 tensor
 
-    std::cout << "\nTensors initialized with provided data:" << std::endl;
-    std::cout << cascade::Tensor({}, {1.f}) << std::endl;                                            // Scalar
-    std::cout << cascade::Tensor({5}, {1.f, 2.f, 3.f, 4.f, 5.f}) << std::endl;                       // Vector
-    std::cout << cascade::Tensor({2, 3}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f}) << std::endl;               // Matrix
-    std::cout << cascade::Tensor({2, 2, 2}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f}) << std::endl;  // Rank 3 tensor
+    // std::cout << "\nTensors initialized with provided data:" << std::endl;
+    // std::cout << cascade::Tensor({}, {1.f}) << std::endl;                                            // Scalar
+    // std::cout << cascade::Tensor({5}, {1.f, 2.f, 3.f, 4.f, 5.f}) << std::endl;                       // Vector
+    // std::cout << cascade::Tensor({2, 3}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f}) << std::endl;               // Matrix
+    // std::cout << cascade::Tensor({2, 2, 2}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f}, true)(1, 1, 1) << std::endl;  // Rank 3 tensor
 
-    cascade::Tensor t({2, 3});
-
-    t(2);
+    cascade::Tensor t({}, {23.4});
+    // cascade::Tensor t;
+    // std::cout << t(0) << std::endl;
+    std::cout << t.slice({0, 5, 2}) << std::endl;
+    return;
 
     // std::cout << "\nTensors filled with zeros:" << std::endl;
     // std::cout << cascade::Tensor::zeros({}) << std::endl;         // Scalar

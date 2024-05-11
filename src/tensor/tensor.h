@@ -31,7 +31,7 @@ public:
 
     ~Tensor();
 
-    size_t size() const;
+    size_t size(bool slice = true) const;
     const std::vector<size_t> &shape() const;
 
     bool empty() const;
@@ -77,7 +77,7 @@ private:
 
     size_t index(const std::vector<size_t> &indices) const;
 
-    void allocateMemory(size_t size, bool grad);
+    void allocateMemory(size_t size, bool grad) const;
 
     void setData(const std::vector<float> &data);
 
@@ -85,8 +85,8 @@ private:
 
     bool scalar_;
 
-    std::vector<size_t> shape_;
-    std::vector<size_t> offset_;
+    std::vector<size_t> sliceShape_;
+    std::vector<size_t> sliceOffset_;
 
     std::function<void()> forward_;
     std::function<void()> backward_;

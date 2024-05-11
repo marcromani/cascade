@@ -14,6 +14,8 @@ struct Tensor::TensorData final
 {
     bool device;
 
+    std::vector<size_t> shape;
+
     std::unique_ptr<float[]> hostData;
     std::unique_ptr<float[]> hostGrad;
 
