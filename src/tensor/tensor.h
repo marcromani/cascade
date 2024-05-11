@@ -91,7 +91,7 @@ private:
     std::function<void()> forward_;
     std::function<void()> backward_;
 
-    class TensorData;
+    struct TensorData;
     std::shared_ptr<TensorData> data_;
 };
 }  // namespace cascade
