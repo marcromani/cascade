@@ -12,25 +12,23 @@ namespace cascade
 {
 struct Tensor::TensorData final
 {
-    struct CudaDeleter final
-    {
-#if CUDA_ENABLED
-        void operator()(float *ptr) const { cudaFree(ptr); }
-#else
-        void operator()(float *ptr) const { delete[] ptr; }
-#endif
-    };
-
     bool device;
-
-    bool hostDataNeedsUpdate;
-    bool deviceDataNeedsUpdate;
 
     std::unique_ptr<float[]> hostData;
     std::unique_ptr<float[]> hostGrad;
 
+#if CUDA_ENABLED
+    bool hostDataNeedsUpdate;
+    bool deviceDataNeedsUpdate;
+
+    struct CudaDeleter final
+    {
+        void operator()(float *ptr) const { cudaFree(ptr); }
+    };
+
     std::unique_ptr<float[], CudaDeleter> deviceData;
     std::unique_ptr<float[], CudaDeleter> deviceGrad;
+#endif
 
     std::vector<Tensor> children;
     std::vector<Tensor> parents;

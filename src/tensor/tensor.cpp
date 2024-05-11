@@ -25,10 +25,12 @@ namespace cascade
 {
 Tensor::Tensor() : scalar_(false), data_(std::make_shared<TensorData>())
 {
-    data_->device = false;  // Empty tensor has no data at all, its location is irrelevant
+    data_->device = false;
 
+#if CUDA_ENABLED
     data_->hostDataNeedsUpdate   = false;
     data_->deviceDataNeedsUpdate = false;
+#endif
 }
 
 Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
@@ -41,12 +43,9 @@ Tensor::Tensor(const std::vector<size_t> &shape, [[maybe_unused]] bool device)
     data_->device = device;
 
     data_->hostDataNeedsUpdate   = data_->device;
-    data_->deviceDataNeedsUpdate = !data_->device;
+    data_->deviceDataNeedsUpdate = false;
 #else
     data_->device = false;
-
-    data_->hostDataNeedsUpdate   = false;
-    data_->deviceDataNeedsUpdate = false;
 #endif
 
     size_t n = size();
@@ -78,12 +77,9 @@ Tensor::Tensor(const std::vector<size_t> &shape, const std::vector<float> &data,
     data_->device = device;
 
     data_->hostDataNeedsUpdate   = data_->device;
-    data_->deviceDataNeedsUpdate = !data_->device;
-#else
-    data_->device                = false;
-
-    data_->hostDataNeedsUpdate   = false;
     data_->deviceDataNeedsUpdate = false;
+#else
+    data_->device = false;
 #endif
 
     size_t n = size();
@@ -143,8 +139,7 @@ void Tensor::toHost()
 
             cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), n * sizeof(float), cudaMemcpyDeviceToHost);
 
-            data_->hostDataNeedsUpdate   = false;
-            data_->deviceDataNeedsUpdate = true;
+            data_->hostDataNeedsUpdate = false;
         }
 
         data_->deviceData.reset(nullptr);
@@ -159,22 +154,16 @@ void Tensor::toDevice()
     {
         data_->device = true;
 
-        if (data_->deviceDataNeedsUpdate)
+        size_t n = size();
+
+        if (data_->deviceData == nullptr)
         {
-            size_t n = size();
-
-            if (data_->deviceData == nullptr)
-            {
-                allocateMemory(n, false);
-            }
-
-            cudaMemcpy(data_->deviceData.get(), data_->hostData.get(), n * sizeof(float), cudaMemcpyHostToDevice);
-
-            data_->hostDataNeedsUpdate   = true;
-            data_->deviceDataNeedsUpdate = false;
+            allocateMemory(n, false);
         }
 
-        data_->hostData.reset(nullptr);
+        cudaMemcpy(data_->deviceData.get(), data_->hostData.get(), n * sizeof(float), cudaMemcpyHostToDevice);
+
+        data_->deviceDataNeedsUpdate = false;
     }
 #endif
 }
@@ -183,25 +172,59 @@ void Tensor::eval() const
 {
     std::vector<const Tensor *> nodes = sortedNodes();
 
+#if CUDA_ENABLED
+    bool leafInDevice;
+
     for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
     {
         const Tensor *node = *it;
 
+        if (node->data_->children.empty())
+        {
+            if (leafInDevice = node->data_->device)
+            {
+                break;
+            }
+        }
+    }
+
+    if (leafInDevice)
+    {
+        for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
+        {
+            Tensor *node = const_cast<Tensor *>(*it);
+            node->toDevice();
+        }
+    }
+#endif
+
+    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
+    {
+        const Tensor *node = *it;
+
+#if CUDA_ENABLED
+        if (node->data_->deviceDataNeedsUpdate)
+        {
+            cudaMemcpy(node->data_->deviceData.get(),
+                       node->data_->hostData.get(),
+                       node->size() * sizeof(float),
+                       cudaMemcpyHostToDevice);
+
+            node->data_->deviceDataNeedsUpdate = false;
+        }
+#endif
+
         if (node->forward_ != nullptr)
         {
             node->forward_();
+        }
 
 #if CUDA_ENABLED
-            if (node->data_->device)
-            {
-                node->data_->hostDataNeedsUpdate = true;
-            }
-            else
-            {
-                node->data_->deviceDataNeedsUpdate = true;
-            }
-#endif
+        if (node->data_->device)
+        {
+            node->data_->hostDataNeedsUpdate = true;
         }
+#endif
     }
 }
 
@@ -210,7 +233,7 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
     if (indices.size() == shape_.size())
     {
         size_t idx = index(indices);
-        str += std::to_string(idx);
+        str += std::to_string(data_->hostData[idx]);
 
         if (indices.back() != shape_.back() - 1)
         {
@@ -245,11 +268,22 @@ void Tensor::toString(const std::vector<size_t> &indices, std::string &str) cons
 
 std::string Tensor::toString() const
 {
+    eval();
+
+#if CUDA_ENABLED
+    if (data_->hostDataNeedsUpdate)
+    {
+        cudaMemcpy(data_->hostData.get(), data_->deviceData.get(), size() * sizeof(float), cudaMemcpyDeviceToHost);
+
+        data_->hostDataNeedsUpdate = false;
+    }
+#endif
+
     std::string str = "Tensor(";
 
     if (scalar_)
     {
-        str += std::to_string(32.1);
+        str += std::to_string(data_->hostData[0]);
     }
     else
     {
@@ -309,6 +343,7 @@ Tensor Tensor::operator+(Tensor &other)
     allocateMemory(n * n, true);
     other.allocateMemory(n * n, true);
 
+    // Set tensor as not realized
     Tensor result(shape_, true);
 
     result.data_->children.push_back(*this);
@@ -329,8 +364,8 @@ Tensor Tensor::operator+(Tensor &other)
         result.backward_ = [result, *this, other]() { addBackward(*this, other); };
     }
 #else
-    result.forward_              = [result, *this, other]() { addForward(result, *this, other); };
-    result.backward_             = [result, *this, other]() { addBackward(*this, other); };
+    result.forward_  = [result, *this, other]() { addForward(result, *this, other); };
+    result.backward_ = [result, *this, other]() { addBackward(*this, other); };
 #endif
 
     return result;
@@ -372,8 +407,8 @@ Tensor Tensor::operator*(Tensor &other)
         result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
     }
 #else
-    result.forward_              = [result, *this, other]() { mulForward(result, *this, other); };
-    result.backward_             = [result, *this, other]() { mulBackward(*this, other); };
+    result.forward_  = [result, *this, other]() { mulForward(result, *this, other); };
+    result.backward_ = [result, *this, other]() { mulBackward(*this, other); };
 #endif
 
     return result;
