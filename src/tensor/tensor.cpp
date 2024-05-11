@@ -433,6 +433,7 @@ Tensor Tensor::operator*(Tensor &other)
 template<typename... Args> Tensor Tensor::sum(Args... indices) const
 {
     // TODO
+    (((void) indices), ...);
     return Tensor {};
 }
 
